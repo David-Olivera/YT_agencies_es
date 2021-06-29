@@ -1,11 +1,11 @@
 
 <?php
-require_once '../config/conexion.php';
+require_once '../../YameviTravel/config/conexion.php';
 session_start();
-if (isset($_SESSION['id_agency'])) {
-    $id_agency = $_SESSION['id_agency'];
+if (isset($_SESSION['yt_id_agency'])) {
+    $id_agency = $_SESSION['yt_id_agency'];
 }else{
- header('location: index.php');
+ header('location: ../helpers/logout_a.php');
 }
 ?>
 <!DOCTYPE html>
@@ -18,9 +18,10 @@ if (isset($_SESSION['id_agency'])) {
     <?php include('include/estilos_agencies.php')?>
 </head>
 <body id="body"> 
+
     <button  id="btnToTop" title="Go to top"><i class="fas fa-angle-up"></i></button>   
     <div class="backgound_img" data-background="../../assets/img/hero/h1_hero.jpg">
-        <?php include('include/navigation_Agencies.php');?>
+        <?php include('include/navigation_agencies.php');?>
         <?php
             include('../model/reservaciones.php');
             $reserva = new Reservation;
@@ -28,10 +29,12 @@ if (isset($_SESSION['id_agency'])) {
             $fast_access = json_decode($reserva->loadFastAccess($id_agency));
 
         ?>
-        <input type="hidden" class="" value="<?php echo $_SESSION['paypal']?>" id="inp_paypal"> 
-        <input type="hidden" class="" value="<?php echo $_SESSION['internal_yt']?>" id="inp_internal_yt"> 
-        <input type="hidden" class="" value="<?php echo $_SESSION['cash']?>" id="inp_cash">
-        <input type="hidden" class="" value="<?php echo $_SESSION['card']?>" id="inp_card">
+        <input type="hidden" class="" value="<?php echo $_SESSION['yt_paypal']?>" id="inp_paypal"> 
+        <input type="hidden" class="" value="<?php echo $_SESSION['yt_internal_yt']?>" id="inp_internal_yt"> 
+        <input type="hidden" class="" value="<?php echo $_SESSION['yt_cash']?>" id="inp_cash">
+        <input type="hidden" class="" value="<?php echo $_SESSION['yt_card']?>" id="inp_card">
+        <input type="hidden" class="" value="<?php echo $_SESSION['yt_operadora']?>" id="inp_operadora">
+
         <div class="container">
             <div class=" d-flex justify-content-center">
                 <div class="alert alert-dismissible w-100" id="alert-msg">
@@ -63,7 +66,7 @@ if (isset($_SESSION['id_agency'])) {
             <a href="#" class="btn btn-yamevi">Promoción! <i class="fas fa-bell pl-2 pr-2"></i></a>
         </div>
         <!-- FORM FINAL DE DETALLES CLIENTE/VUELO -->
-        <div class="container" id="details_reservation">
+        <div class="container container_pages" id="details_reservation">
             <div class="row ">
                 <div class="col-xl-12 col-md-12 content_steps">
                     <h3>PASO 3</h3>
@@ -71,7 +74,7 @@ if (isset($_SESSION['id_agency'])) {
                 </div>
                 <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12">
                     <div class=" mt-2 mb-5">
-                        <?php if($_SESSION['internal_yt'] == 1) {?>
+                        <?php if($_SESSION['yt_internal_yt'] == 1) {?>
                         <div id="code_booking">
                             <div class="d-flex justify-content-center row" >
                                 <div class="col-xl-12 col-md-12 pt-4 content_type_info">
@@ -120,6 +123,7 @@ if (isset($_SESSION['id_agency'])) {
                             </div>
                             <div class="col-xl-12 col-md-12 pt-3">
                                 <div class="form_details">
+
                                     <div class="form-row" id="inps_entrada">
                                         <div class="form-group col-md-4">
                                             <label for="">Aerolina Llegada</label>
@@ -134,7 +138,7 @@ if (isset($_SESSION['id_agency'])) {
                                                 <div class="col-md-12">                                            
                                                     <label for="">Hora de Llegada</label>
                                                 </div>
-                                                <div class="form-group col-md-4 pr-1">
+                                                <div class="form-group col-xl-4 col-md-5 pr-1">
                                                     <select class="form-control form-control-sm" id="inp_hour_entry">
                                                         <option>01</option>
                                                         <option>02</option>
@@ -164,7 +168,7 @@ if (isset($_SESSION['id_agency'])) {
                                                 <div class="col-md-1 p-1 text-center">
                                                     <span>:</span>
                                                 </div>
-                                                <div class="form-group col-md-4 pl-1">
+                                                <div class="form-group col-xl-4 col-md-5 pl-1">
                                                     <select class="form-control form-control-sm" id="inp_minute_entry">
                                                         <option>00</option>
                                                         <option>01</option>
@@ -248,7 +252,7 @@ if (isset($_SESSION['id_agency'])) {
                                                 <div class="col-md-12">                                            
                                                     <label for="exampleFormControlSelect1">Hora de Salida</label>
                                                 </div>
-                                                <div class="form-group col-md-4 pr-1">
+                                                <div class="form-group col-xl-4 col-md-5 pr-1">
                                                     <select class="form-control form-control-sm" id="inp_hour_exit">
                                                         <option>01</option>
                                                         <option>02</option>
@@ -278,7 +282,7 @@ if (isset($_SESSION['id_agency'])) {
                                                 <div class="col-md-1 p-1 text-center">
                                                     <span>:</span>
                                                 </div>
-                                                <div class="form-group col-md-4 pl-1">
+                                                <div class="form-group col-xl-4 col-md-5 pl-1">
                                                     <select class="form-control form-control-sm" id="inp_minute_exit">
                                                         <option>00</option>
                                                         <option>01</option>
@@ -349,12 +353,12 @@ if (isset($_SESSION['id_agency'])) {
                                         </div>
                                     </div>   
                                     <div class="form-row" id="inp_pickup">
-                                        <div class="form-group col-md-4" id="inp_pickup_enter">
+                                        <div class="form-group col-md-5" id="inp_pickup_enter">
                                             <div class="row">
                                                 <div class="col-md-12">                                            
                                                     <label for="exampleFormControlSelect1">Hora de Pickup <small>(Ida)</small></label>
                                                 </div>
-                                                <div class="form-group col-md-4 pr-1">
+                                                <div class="form-group col-xl-4 col-md-5 pr-1">
                                                     <select class="form-control form-control-sm" id="inp_hour_pick">
                                                         <option>01</option>
                                                         <option>02</option>
@@ -384,7 +388,7 @@ if (isset($_SESSION['id_agency'])) {
                                                 <div class="col-md-1 p-1 text-center">
                                                     <span>:</span>
                                                 </div>
-                                                <div class="form-group col-md-4 pl-1">
+                                                <div class="form-group col-xl-4 col-md-5 pl-1">
                                                     <select class="form-control form-control-sm" id="inp_minute_pick">
                                                         <option>00</option>
                                                         <option>01</option>
@@ -453,12 +457,12 @@ if (isset($_SESSION['id_agency'])) {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="form-group col-md-4" id="inp_pickup_exit">
+                                        <div class="form-group col-md-5" id="inp_pickup_exit">
                                             <div class="row">
                                                 <div class="col-md-12">                                            
                                                     <label for="exampleFormControlSelect1">Hora de Pickup <small>(Regreso)</small></label>
                                                 </div>
-                                                <div class="form-group col-md-4 pr-1">
+                                                <div class="form-group col-xl-4 col-md-5 pr-1">
                                                     <select class="form-control form-control-sm" id="inp_hour_pick_inter">
                                                         <option>01</option>
                                                         <option>02</option>
@@ -488,7 +492,7 @@ if (isset($_SESSION['id_agency'])) {
                                                 <div class="col-md-1 p-1 text-center">
                                                     <span>:</span>
                                                 </div>
-                                                <div class="form-group col-md-4 pl-1">
+                                                <div class="form-group col-xl-4 col-md-5 pl-1">
                                                     <select class="form-control form-control-sm" id="inp_minute_pick_inter">
                                                         <option>00</option>
                                                         <option>01</option>
@@ -557,6 +561,72 @@ if (isset($_SESSION['id_agency'])) {
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>                                    
+                                    <!-- Horarios  -->
+                                    <div class="form-row pb-3" id="content_time_service">
+                                        <div class="">
+                                            <label for="" id="text_time_service">Hora de abordaje</label>
+                                        </div>
+                                        <div class="btn-group-toggle" data-toggle="buttons" id="content_check_btns">
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="08:00" active>08:00
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="08:40"> 08:40
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="09:20"> 09:20
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="10:00">10:00
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="10:40"> 10:40
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="11:20"> 11:20
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="12:00">12:00
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options"  autocomplete="off" value="12:40"> 12:40
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="13:20"> 13:20
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:00">14:00
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:40"> 14:40
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:40"> 15:20
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:40"> 16:00
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:40"> 16:40
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="17:20"> 17:20
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="18:00 HRS">18:00
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="18:40 HRS"> 18:40
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="19:20 HRS"> 19:20
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="20:00 HRS"> 20:00
+                                            </label>
+                                            
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -568,7 +638,7 @@ if (isset($_SESSION['id_agency'])) {
                                 <div class="form_details">
                                     <div class="form-row">
                                         <div class="form-group col-md-4">
-                                            <label for="">Nombre</label>
+                                            <label for="">Nombre (s)</label>
                                             <input type="text" class="form-control form-control-sm" id="inp_name_client" placeholder="Nombre del Cliente">
                                         </div>
                                         <div class="form-group col-md-4">
@@ -576,11 +646,15 @@ if (isset($_SESSION['id_agency'])) {
                                             <input type="text" class="form-control form-control-sm" id="inp_lastname_client" placeholder="Apellido Paterno del Cliente">
                                         </div>
                                         <div class="form-group col-md-4">
-                                            <label for="">Teléfono Celular</label>
-                                            <input type="text" class="form-control form-control-sm" id="inp_phone_client" placeholder="Teléfono del Cliente">
+                                            <label for="">Apellido Materno</label>
+                                            <input type="text" class="form-control form-control-sm" id="inp_mother_lastname" placeholder="Apellido Materno del Cliente">
                                         </div>
                                     </div>
                                     <div class="form-row">
+                                        <div class="form-group col-md-4">
+                                            <label for="">Teléfono Celular</label>
+                                            <input type="text" class="form-control form-control-sm" id="inp_phone_client" placeholder="Teléfono del Cliente">
+                                        </div>
                                         <div class="form-group col-md-4">
                                             <label for="inputEmail4">Correo Electronico</label>
                                             <input type="email" class="form-control form-control-sm" id="inp_email_client" placeholder="Email del Cliente">
@@ -756,11 +830,25 @@ if (isset($_SESSION['id_agency'])) {
                             </div>
                             <div class="line_resumen content_cservicio">
                                 <small>Cargo Por Servicio: </small>
-                                <span><input type="text" class="form-control form-control-sm info_service_charge" placeholder="0.00" id="cservicio_resumen"></span>
+                                <span><input type="text" class="form-control form-control-sm info_service_charge" onClick="this.setSelectionRange(0, this.value.length)" placeholder="0.00" id="cservicio_resumen"></span>
                             </div>
                             <div class="line_resumen content_descuento">
-                                <small>Descuento: </small>
-                                <span><input type="text" class="form-control form-control-sm info_discount" id="descuento_resumen" placeholder="0.00" disabled></span>
+                                <small>Descuento por Método de Pago: </small>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control form-control-sm info_discount" id="descuento_resumen" placeholder="0.00" disabled>
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text border border-light" id=""><span id="porcentaje"></span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="line_resumen content_descuento_operadora">
+                                <small>Descuento por Operadora: </small>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control form-control-sm info_discount" id="descuento_resumen_operadora" placeholder="0.00" disabled>
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text border border-light" id=""><span id="porcentaje_operadora"></span></span>
+                                    </div>
+                                </div>
                             </div>
                             <div class="line_resumen">
                                 <small>Idioma de ticket: </small>
@@ -773,23 +861,39 @@ if (isset($_SESSION['id_agency'])) {
                             </div>
                             <div class="line_resumen">
                                 <div class="row ">
-                                    <div class="col-md-2 pl-0">                                
+                                    <div class="col-md-3 pl-0">                                
                                         <small>Total: </small>
                                     </div>
-                                    <div class="col-md-6 text-right pr-0">
-                                        <h2 id="info_import" data-ratemx="00" data-rateus="00" data-ratemx_c="00" data-rateus_c="00" data-discountmx="00" data-discountus="00"></h2>
+                                    <div class="col-md-5 text-right pr-0">
+                                        <h2 id="info_import" data-ratemx="00" data-rateus="00" data-ratemx_c="00" data-rateus_c="00" data-discountmx="00" data-discountus="00" data-operator="0"  data-ratemx_ope_tp="00" data-rateus_ope_tp="00" data-discountmxope_tp="00" data-discountusope_tp="00" data-ratemx_ope="00" data-rateus_ope="00" data-discountmxope="00" data-discountusope="00" ></h2>
                                     </div>
                                     <div class="col-md-4 text-right pl-1 pr-0">
                                         <select class="form-control" id="select_type_change">
                                                 <option value="mxn">MXN</option>
                                                 <option value="usd">USD</option>
                                         </select>
-                                        <input type="hidden" name="inp_amount_total_mxn" id="inp_amount_total_mxn">
-                                        <input type="hidden" name="inp_amount_total_usd" id="inp_amount_total_usd">
                                     </div>
                                 </div>
                             </div>
-                            <div class="pt-3 " id="content_terms_conditions">
+                            <div class="line_resumen " id="content_descuento_electronic">
+                                <small>Monedero Electrónico: </small>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control form-control-sm info_discount_electronic" id="inp_discount_electronic" placeholder="0.00" disabled>
+                                </div>
+                            </div>
+                            <div class="pt-3 " id="content_electronic_purse">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="check_electronic_purse" required>
+                                    <label class="custom-control-label" for="check_electronic_purse">Deseo utilizar el monedero electrónico.</label>
+                                </div>
+                            </div>
+                            <div class="pt-1 " id="content_ceros">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="check_ceros" required>
+                                    <label class="custom-control-label" for="check_ceros">Deseo que mi ticket se visuialice en $0.00</label>
+                                </div>
+                            </div>
+                            <div class="pt-1 " id="content_terms_conditions">
                                 <div class="custom-control custom-checkbox mb-3">
                                     <input type="checkbox" class="custom-control-input" id="check_terminos" required>
                                     <label class="custom-control-label" for="check_terminos">Acepto los<a target="_blank" href="https://www.yamevitravel.com/terminos-y-condiciones/" >Términos y Condiciones</a></label>
@@ -811,7 +915,7 @@ if (isset($_SESSION['id_agency'])) {
                 <br>
                 <!-- FORM RESERV -->
                 <form id="inps_store" action="post">
-                    <input type="text" name="_AGENCIE" id="_AGENCIE" value="<?php echo $_SESSION['id_agency']?>">
+                    <input type="text" name="_AGENCIE" id="_AGENCIE" value="<?php echo $_SESSION['yt_id_agency']?>">
                     <input type="text" name="_ORIGIN_HOTEL" id="_ORIGIN_HOTEL">
                     <input type="text" name="_DESTINY_HOTEL" id="_DESTINY_HOTEL">
                     <input type="text" name="_TYPE_TRANSFER" id="_TYPE_TRANSFER">
@@ -821,6 +925,9 @@ if (isset($_SESSION['id_agency'])) {
                     <input type="text" name="_NUMBER_PAS" id="_NUMBER_PAS">
                     <input type="text" name="_TOTAL_MXN" id="_TOTAL_MXN">
                     <input type="text" name="_TOTAL_USD" id="_TOTAL_USD">
+                    <!-- Inputs sin comision de tarjeta ni de agencia, TARIFA NETA -->
+                    <input type="text" name="inp_amount_total_mxn" id="inp_amount_total_mxn">
+                    <input type="text" name="inp_amount_total_usd" id="inp_amount_total_usd">
                     <input type="text" name="_PAYMENT" id="_PAYMENT">
                     <input type="text" name="_TYPE_CHANGE" id="_TYPE_CHANGE">
                     <input type="text" name="_TYPE_CURRENCY" id="_TYPE_CURRENCY" >
@@ -838,17 +945,17 @@ if (isset($_SESSION['id_agency'])) {
                 
                 <!-- FORM PAYPAL -->
                 <form action="https://www.paypal.com/cgi-bin/webscr" method="post" name="paypalPayment" id="paypalPayment">
-                    <input type="text" name="cmd" id="cmd" value="_xclick">
-                    <input type="text" name="business" id="business" value="arturoruiz75@hotmail.com">
-                    <input type="text" name="item_name" id="p_itemname" value="">
-                    <input type="text" name="amount" id="p_amount" value="">
-                    <input type="text" name="invoice" id="p_invoice" value="">
-                    <input type="text" name="no_shipping" value="1">
-                    <input type="text" name="currency_code" id="p_currency" value="MXN">
-                    <input type="text" name="rm" value="1">
-                    <input type="text" name="return" value="https://wwww.yamevitravel.com/agencias/">
-                    <input type="text" name="cancel_return" value="https://www.yamevitravel.com">
-                    <input type="text" name="notify_url" value="https://www.yamevitravel.com/nativengine/models/ipnpaypal.php">
+                    <input type="hidden" name="cmd" id="cmd" value="_xclick">
+                    <input type="hidden" name="business" id="business" value="arturoruiz75@hotmail.com">
+                    <input type="hidden" name="item_name" id="p_itemname" value="">
+                    <input type="hidden" name="amount" id="p_amount" value="">
+                    <input type="hidden" name="invoice" id="p_invoice" value="">
+                    <input type="hidden" name="no_shipping" value="1">
+                    <input type="hidden" name="currency_code" id="p_currency" value="MXN">
+                    <input type="hidden" name="rm" value="1">
+                    <input type="hidden" name="return" value="https://wwww.yamevitravel.com/agencias/">
+                    <input type="hidden" name="cancel_return" value="https://www.yamevitravel.com">
+                    <input type="hidden" name="notify_url" value="https://www.yamevitravel.com/nativengine/models/ipnpaypal.php">
                 </form>
             </div>
         </div>
@@ -859,7 +966,7 @@ if (isset($_SESSION['id_agency'])) {
                     <div class="card p-1" id="form_transfer_edit">
                         <div class="card-body">
                             <form id="form_reserva_edit" > 
-                                <input type="hidden" class="" value="<?php echo $_SESSION['todaysale']?>" id="inp_todaysale_edit">   
+                                <input type="hidden" class="" value="<?php echo $_SESSION['yt_todaysale']?>" id="inp_todaysale_edit">   
                                 <input type="hidden" value="" id="inp_type_traslate"> 
                                 <div class="form-row">
                                     <div class="form-inline col-md-3 content_hotel_1 ">
@@ -1074,7 +1181,7 @@ if (isset($_SESSION['id_agency'])) {
             </div>
         </div>
         <!-- BUSQUEDA DE TRASLADO -->
-        <div class="container" id="content_search">
+        <div class="container container_pages" id="content_search">
             <div class="row">
                 <div class="col-lg-5 col-md-6 col-sm-6 p-3 content_traslados_1">
                     <div class="card">
@@ -1083,7 +1190,7 @@ if (isset($_SESSION['id_agency'])) {
                         </div>
                         <div class="card-body">
                             <form id="form_reserva" > 
-                                <input type="hidden" class="" value="<?php echo $_SESSION['todaysale']?>" id="inp_todaysale">
+                                <input type="hidden" class="" value="<?php echo $_SESSION['yt_todaysale']?>" id="inp_todaysale">
                                 <div class="form-group">
                                     <label for="inp_hotel">Hotel</label>
                                     <input list="encodings" value="" id="inp_hotel" name="inp_hotel" placeholder="Ingresa el hotel" class="form-control form-control-sm ">
@@ -1135,22 +1242,22 @@ if (isset($_SESSION['id_agency'])) {
                                     <label for="inp_pasajeros">Pasajeros</label>
                                     <select class="custom-select custom-select-sm" id="inp_pasajeros" name="inp_pasajeros" placeholder="Seleccione núm. de pasajeros">
                                         <option value="">Seleccione núm. de pasajeros</option>
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                        <option value="5">5</option>
-                                        <option value="6">6</option>
-                                        <option value="7">7</option>
-                                        <option value="8">8</option>
-                                        <option value="9">9</option>
-                                        <option value="10">10</option>
-                                        <option value="11">11</option>
-                                        <option value="12">12</option>
-                                        <option value="13">13</option>
-                                        <option value="14">14</option>
-                                        <option value="15">15</option>
-                                        <option value="16">16</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                            <option class="num_px_pri" value="7">7</option>
+                                            <option class="num_px_pri" value="8">8</option>
+                                            <option class="num_px_pri" value="9">9</option>
+                                            <option class="num_px_pri" value="10">10</option>
+                                            <option class="num_px_pri" value="11">11</option>
+                                            <option class="num_px_pri" value="12">12</option>
+                                            <option class="num_px_pri" value="13">13</option>
+                                            <option class="num_px_pri" value="14">14</option>
+                                            <option class="num_px_pri" value="15">15</option>
+                                            <option class="num_px_pri" value="16">16</option>
                                     </select>
                                 </div>
                                 <div class="form-group" id="content_date_star">
@@ -1286,22 +1393,22 @@ if (isset($_SESSION['id_agency'])) {
                                     <label for="inp_pasajeros">Pasajeros</label>
                                     <select class="custom-select custom-select-sm"  placeholder="Seleccione núm. de pasajeros" disabled>
                                         <option value="">Seleccione núm. de pasajeros</option>
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                        <option value="5">5</option>
-                                        <option value="6">6</option>
-                                        <option value="7">7</option>
-                                        <option value="8">8</option>
-                                        <option value="9">9</option>
-                                        <option value="10">10</option>
-                                        <option value="11">11</option>
-                                        <option value="12">12</option>
-                                        <option value="13">13</option>
-                                        <option value="14">14</option>
-                                        <option value="15">15</option>
-                                        <option value="16">16</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                            <option class="num_px_pri" value="7">7</option>
+                                            <option class="num_px_pri" value="8">8</option>
+                                            <option class="num_px_pri" value="9">9</option>
+                                            <option class="num_px_pri" value="10">10</option>
+                                            <option class="num_px_pri" value="11">11</option>
+                                            <option class="num_px_pri" value="12">12</option>
+                                            <option class="num_px_pri" value="13">13</option>
+                                            <option class="num_px_pri" value="14">14</option>
+                                            <option class="num_px_pri" value="15">15</option>
+                                            <option class="num_px_pri" value="16">16</option>
                                     </select>
                                 </div>
                                 <div class="form-group" id="content_date_star">
@@ -1447,7 +1554,7 @@ if (isset($_SESSION['id_agency'])) {
                     <div class="modal-body text-center">
                         <h4>Excelente!</h4>	
                         <p id="msj_success"></p>
-                        <button class="btn btn-success"  onclick="window.location.href='reservations.php'" data-dismiss="modal"><span>Mis Reservaciones</span> <i class="material-icons">&#xE5C8;</i></button>
+                        <button class="btn btn-success" id="btn_succes_r"  onclick="window.location.href='reservations.php'" data-dismiss="modal"><span>Mis Reservaciones</span> <i class="material-icons">&#xE5C8;</i></button>
                     </div>
                 </div>
             </div>
@@ -1475,6 +1582,7 @@ if (isset($_SESSION['id_agency'])) {
 </body>
     <?php include('include/footer_agencies.php')?>
     <?php include('include/scrips_agencies.php')?>
+    <script src="../assets/js/agencies-transfers.js"></script>
 <script>
     document.onkeydown = function(e){
         tecla = (document.all) ? e.keyCode : e.which;

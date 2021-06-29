@@ -6,10 +6,7 @@
     <!-- jQuery Custom Scroller CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script src="../assets/js/agencies-transfers.js"></script>
-    <script src="../assets/js/reservations.js"></script>
-    <script src="../assets/js/conciliations.js"></script>
-
+    <script src="../assets/js/navigation.js"></script>
 
     <script>
     $(window).on("load",function() {

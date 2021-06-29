@@ -44,7 +44,7 @@ if ($id_res) {
         </div>
         <div class="container container_pages">
             <h4 class="">Reservación - <?php echo $coinv ?> </h4>
-            <p class="mb-0"> <i class="fas fa-exclamation-triangle text-warning"></i>  Recordatorio, al realizar cambios de Hotel, Traslado, Servicio o N. pasajeros se reflejara el nuevo precio al guardar los nuevos datos.</p>
+            <p class="mb-0"> <i class="fas fa-exclamation-triangle text-warning"></i>  Recordatorio, al realizar cambios de Hotel, Traslado, Servicio o N. pasajeros se reflejara el nuevo precio al guardar los datos.</p>
             <?php if($reedit == 1 || $reedit == '' || $reedit != 0) { 
                 $details_reservation = json_decode($reservas_model->getDetailsReservation($id_res)); 
                 $type_currency = $details_reservation->type_currency == 'mx' ? 'MXN' : 'USD';
@@ -174,7 +174,7 @@ if ($id_res) {
                                         <div class="col-xl-12 pt-3">
                                             <div class="form-row">
                                                 <div class="form-group col-md-3">
-                                                    <label for="">Codigo</label>
+                                                    <label for="">Localizador</label>
                                                     <input type="text" class="form-control form-control-sm" id="inp_reserv_edit" placeholder="ID de reserva externa" value='<?php echo $code_client?>'>
                                                 </div>
                                                 <div class="form-group col-md-3">
@@ -254,7 +254,7 @@ if ($id_res) {
                                                 <?php } ?>
                                                 <div class="form-group col-md-3">
                                                     <label for="">Traslado</label>
-                                                    <select class="custom-select custom-select-sm " id="inp_traslado_edit" name="inp_traslado_edit" >
+                                                    <select class="custom-select custom-select-sm " id="inp_traslado_up" name="inp_traslado_edit" >
                                                         <option value="">Seleccione tipo de traslado</option>
                                                         <?php if($type_transfer == 'RED') { ?> <option value="RED" selected="selected">Redondo</option> <?php }else{ ?> <option value="RED">Redondo</option> <?php }?>
                                                         <?php if($type_transfer == 'SEN/AH') { ?> <option value="SEN/AH" selected="selected">Aeropuerto - Hotel</option> <?php }else{ ?> <option value="SEN/AH">Aeropuerto - Hotel</option> <?php }?>
@@ -267,7 +267,9 @@ if ($id_res) {
                                                     <label for="">Servicio</label>
                                                     <select class="custom-select custom-select-sm " id="inp_servicio_edit" name="inp_servicio_edit">
                                                         <option value="">Seleccione tipo de servicio</option>
+                                                        <?php if($type_transfer == 'RED' || $type_transfer == 'SEN/AH' || $type_transfer == 'SEN/HA') { ?>
                                                         <?php if($type_service == 'compartido') { ?> <option value="compartido" selected="selected">Compartido</option> <?php }else{ ?> <option value="compartido">Compartido</option> <?php }?>
+                                                        <?php } ?>
                                                         <?php if($type_service == 'privado') { ?> <option value="privado" selected="selected">Privado</option> <?php }else{ ?> <option value="privado">Privado</option> <?php }?>
                                                         <?php if($type_service == 'lujo') { ?> <option value="lujo" selected="selected">Lujo</option> <?php }else{ ?> <option value="lujo">Lujo</option> <?php }?>  
                                                     </select>
@@ -499,7 +501,7 @@ if ($id_res) {
                                                 </div>
                                                 <div class="form-group col-md-2">
                                                     <label for="inputEmail4">Método de Pago</label>
-                                                    <input type="email" class="form-control form-control-sm" id="inp_method_payment_edit" placeholder="Método de Pago" value='<?php echo $newnamepay ?>' disabled>
+                                                    <input type="text" class="form-control form-control-sm" id="inp_method_payment_edit" placeholder="Método de Pago" value='<?php echo $newnamepay ?>' disabled>
                                                 </div>
                                                 <?php if($details_reservation->method_payment == 'card' || $details_reservation->method_payment == 'paypal'){?>
                                                 <div class="form-group col-md-2 pl-1">

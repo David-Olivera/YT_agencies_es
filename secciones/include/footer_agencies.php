@@ -31,3 +31,22 @@
         </div>
     </div>
 </footer>
+<!-- Modal -->
+<div class="modal fade" id="electronicPurseModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Monedero Electrónico</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body text-center p-4">
+        <h4>Monedero disponible:</h4>
+        <div id="val_electronic_purse"></div>
+        <p><small>El monedero pueder utilizado como método pago en la reserva que guste realizar.</small></p>
+        <a href="transfers.php" class="btn btn-yamevi btn-sm" data-animation="fadeInLeft" data-delay=".8s">Reservar Ahora</a>
+      </div>
+    </div>
+  </div>
+</div>

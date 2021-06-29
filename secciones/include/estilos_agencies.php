@@ -13,5 +13,6 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <div id="loading">
-    <div class="loader"></div>  
+    <div class="loader">
+    </div> 
 </div>

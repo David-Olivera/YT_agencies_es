@@ -15,19 +15,33 @@ $(function(){
     $('#inp_pickup_exit').hide(); 
     $("#alert-msg").hide();
     $('#btn-anuncio').hide();
-
-
-$(document).on('click', '#close-anuncio', function(){
-    $('#anuncio').hide('slow');
-    $('#btn-anuncio').show('slow');
-
-});
-$(document).on('click', '#btn-anuncio', function(){
-    $('#anuncio').show('slow');
-    $('#btn-anuncio').hide('slow');
-
-});
     loadTimeReservation();
+
+
+        function loadTimeReservation(){
+            var dt = new Date();
+            var time = dt.getHours();
+            if (time < 7 || time >= 20){
+                $('#content_search').hide();
+                $('#content_bloquee').show();
+                $('.reserva_disabled').text('Lo sentimos, no se puede realizar reservas antes de las 8:00 AM y despues de las 8:00 PM.');
+                return false;   
+            }else{
+                $('#content_search').show();
+                $('#content_bloquee').hide();
+
+            }
+        }
+        $(document).on('click', '#close-anuncio', function(){
+            $('#anuncio').hide('slow');
+            $('#btn-anuncio').show('slow');
+
+        });
+        $(document).on('click', '#btn-anuncio', function(){
+            $('#anuncio').show('slow');
+            $('#btn-anuncio').hide('slow');
+
+        });
 
        //Btn x de alert mensaje
         $("#alert-close").click(function(){
@@ -35,7 +49,7 @@ $(document).on('click', '#btn-anuncio', function(){
 
         });
         // datepicker
-        $( function() {        
+        $(function() {        
             var $datepicker2 = $( "#datepicker_end" );
             let inp_todaysale = $('#inp_todaysale').val();
             let todaysale = 0;
@@ -79,7 +93,7 @@ $(document).on('click', '#btn-anuncio', function(){
               $.datepicker.setDefaults($.datepicker.regional['es']);
         });
         // datepicker edit
-        $( "#datepicker_star_edit" ).datepicker({
+        $("#datepicker_star_edit").datepicker({
             dateFormat: "yy-mm-dd",
             defaultDate: "+1w",
             dayNamesMin: [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa" ],
@@ -90,7 +104,7 @@ $(document).on('click', '#btn-anuncio', function(){
                 $("#datepicker_end_edit").datepicker( "option", "minDate", selectedDate );
             }
         });
-        $( "#datepicker_end_edit" ).datepicker({
+        $("#datepicker_end_edit").datepicker({
             defaultDate: "+1w",
             dateFormat: "yy-mm-dd",
             dayNamesMin: [ "Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa" ],
@@ -101,22 +115,7 @@ $(document).on('click', '#btn-anuncio', function(){
                 $("#datepicker_star_edit" ).datepicker( "option", "maxDate", selectedDate );
             }
         });
-
-        function loadTimeReservation(){
-            var dt = new Date();
-            var time = dt.getHours();
-            if (time < 7 || time >= 20){
-                $('#content_search').hide();
-                $('#content_bloquee').show();
-                $('.reserva_disabled').text('Lo sentimos, no se puede realizar reservas antes de las 8:00 AM y despues de las 8:00 PM.');
-                return false;   
-            }else{
-                $('#content_search').show();
-                $('#content_bloquee').hide();
-
-            }
-        }
-
+        
         //Tipo de traslado
         $(document).on('change', '#inp_traslado', function(){
             $('#datepicker_star').val('');
@@ -162,8 +161,6 @@ $(document).on('click', '#btn-anuncio', function(){
 
         //Tipo de traslado edit
         $(document).on('change', '#inp_traslado_edit', function(){
-            $('#datepicker_star_edit').datepicker('setDate', null);
-            $('#datepicker_end_edit').datepicker('setDate', null);
             let value = "";
             value = $(this).val();
             if (value == '') {
@@ -233,6 +230,7 @@ $(document).on('click', '#btn-anuncio', function(){
             let traslado = $('#inp_traslado').val();
             let f_llegada = $('#datepicker_star').val();
             let f_salida = $('#datepicker_end').val();
+            let operadora = $('#inp_operadora').val();
             if (hotel == null || hotel.length == 0 || /^\s+$/.test(hotel)) {
                 $('#inp_hotel').addClass(" is-invalid");
                 $('#inp_hotel').focus();
@@ -275,6 +273,7 @@ $(document).on('click', '#btn-anuncio', function(){
                 'traslado': traslado,
                 'date_star': f_llegada,
                 'date_end': f_salida,
+                'operadora':operadora,
                 'search_traslado': true
             };
             $.ajax({
@@ -309,8 +308,12 @@ $(document).on('click', '#btn-anuncio', function(){
                     }
                     $('#inp_pasajeros_edit').val(pasajeros);
                     $('#inp_traslado_edit').val(traslado);
+                    $("#datepicker_star_edit").datepicker({
+                        language: 'es',
+                        minDate: f_llegada,
+                    });
                     $("#datepicker_star_edit").datepicker('setDate', new Date(f_llegada));
-                    $("#datepicker_star_edit").datepicker( "option", "minDate", minDateArg );
+                    $("#datepicker_star_edit").datepicker( "option", "minDate", f_llegada );
                     if (f_salida) {
                         $("#datepicker_end_edit").datepicker( "option", "minDate", f_salida );
                         $("#datepicker_end_edit").datepicker('setDate', new Date(f_salida));
@@ -319,7 +322,10 @@ $(document).on('click', '#btn-anuncio', function(){
                         $('#content_btn_search').addClass('col-md-1 pl-3 pr-3');
                     }
                     if (traslado == 'SEN/HH') {
-                        $('#content_btn_search').addClass('col-md-1 pl-3 pr-3');
+                        $('#content_date_end_edit').hide();
+                        $('.content_pasajeros').removeClass('col-md-1');
+                        $('.content_pasajeros').addClass('col-md-2');
+                        $('#content_btn_search').addClass('col-md-2 pl-3 pr-3');
                     }
                     if (traslado == 'SEN/HA' || traslado == 'SEN/AH') {
                         $('#content_btn_search').addClass('col-md-3 pl-3 pr-3');
@@ -334,7 +340,6 @@ $(document).on('click', '#btn-anuncio', function(){
             });
 
         });
-
         //Search Reservaion Edit
         $(document).on('click', '#btn_search_reserva_edit', function(e){
             e.preventDefault();
@@ -344,6 +349,7 @@ $(document).on('click', '#btn-anuncio', function(){
             let traslado = $('#inp_traslado_edit').val();
             let f_llegada = $('#datepicker_star_edit').val();
             let f_salida = $('#datepicker_end_edit').val();
+            let operadora = $('#inp_operadora').val();
             if (hotel == null || hotel.length == 0 || /^\s+$/.test(hotel)) {
                 $('#inp_hotel_edit').addClass(" is-invalid");
                 $('#inp_hotel_edit').focus();
@@ -386,6 +392,7 @@ $(document).on('click', '#btn-anuncio', function(){
                 'traslado': traslado,
                 'date_star': f_llegada,
                 'date_end': f_salida,
+                'operadora':operadora,
                 'search_traslado': true
             };
             $.ajax({
@@ -402,6 +409,7 @@ $(document).on('click', '#btn-anuncio', function(){
                 success: function(data){
                     let inp_todaysale = $('#inp_todaysale').val();
                     let todaysale = 0;
+                    $('#inp_type_traslate').val(traslado);
                     if (inp_todaysale == 1 || inp_todaysale == 0) {
                         todaysale = $('#inp_todaysale').val();
                     }else{
@@ -418,7 +426,7 @@ $(document).on('click', '#btn-anuncio', function(){
                     $('#inp_pasajeros_edit').val(pasajeros);
                     $('#inp_traslado_edit').val(traslado);
                     $("#datepicker_star_edit").datepicker('setDate', new Date(f_llegada));
-                    $("#datepicker_star_edit").datepicker( "option", "minDate", minDateArg );
+                    $("#datepicker_star_edit").datepicker( "option", "minDate", f_llegada );
                     if (f_salida) {
                         $("#datepicker_end_edit").datepicker( "option", "minDate", f_salida );
                         $("#datepicker_end_edit").datepicker('setDate', new Date(f_salida));
@@ -441,6 +449,11 @@ $(document).on('click', '#btn-anuncio', function(){
             $("#details_reservation").show( "drop", { direction: "right" }, "slow" );
             $('.content_h_destino').hide();
             $('.content_descuento').hide();
+            $('#content_time_service').hide();
+            $('.content_descuento_operadora').hide();
+            $('#content_descuento_electronic').hide();
+            $('.btn_load').hide();
+            $('#finish_reserv').show();
             e.preventDefault();
             let hotel = $('#name_hotel').text();
             let a_traslado = $('#inp_type_traslate').val();
@@ -451,6 +464,8 @@ $(document).on('click', '#btn-anuncio', function(){
             let precio_mxn_rt = $(this).data('rate-rt');
             let precio_us_rt = $(this).data('rateus-rt');
             let type_traslado = $(this).data('type');
+            let operadora = $(this).data('operadora');
+            let id_operadora = $('#inp_operadora').val();
             let new_type_traslado = "";
             let paypal = $('#inp_paypal').val();
             let cash = $('#inp_cash').val();
@@ -472,6 +487,10 @@ $(document).on('click', '#btn-anuncio', function(){
                 case 'lujo':
                     new_type_traslado = "Lujo";
                     break;
+            }
+            if (type_traslado == 'compartido') {
+                $('#content_time_service').show();
+                
             }
             if (a_traslado == 'REDHH' || a_traslado == 'SEN/HH') {
                  interhotel = $('#name_interhotel').text();
@@ -498,43 +517,156 @@ $(document).on('click', '#btn-anuncio', function(){
             let cargo = 0.95;
             let valor_descuento_mx = 0;
             let valor_descuento_us = 0;
+            var valor_descuento_mx_ope = 0;
+            var valor_descuento_us_ope = 0;
+            var valor_descuento_mx_ope_tp = 0;
+            var valor_descuento_us_ope_tp = 0;
+            var finally_valor_descuento_mx_ope_tp = 0;
+            var finally_valor_descuento_us_ope_tp = 0;
+            let porcentaje = 5;
+            $('#porcentaje').text(porcentaje + '%');
+            $('#porcentaje_operadora').text(parseFloat(operadora) + '%');
             let nuevo_valor_mx = 0; 
             let nuevo_valor_us = 0;
+            let nuevo_valor_mx_ope = 0; 
+            let nuevo_valor_us_ope = 0;
+            var new_porcen = 0;
+            let descuento_operador = 0.05;
+          
+            if (id_operadora == 1) {
+                descuento_operador = 0.85;
+                new_porcen = operadora /= 100;
+                $('.content_descuento_operadora').show('slow');
+            }
+            console.log(descuento_operador);
             if (a_traslado == 'RED' || a_traslado == 'REDHH') {
                 nuevo_valor_mx = (precio_mxn_rt / cargo).toFixed(0);
                 nuevo_valor_us = (precio_us_rt / cargo).toFixed(0);
                 valor_descuento_mx = (nuevo_valor_mx * descuento).toFixed(0);
                 valor_descuento_us = (nuevo_valor_us * descuento).toFixed(0);
+
+                //Operator
+                // nuevo_valor_mx_ope = (precio_mxn_ow / descuento_operador).toFixed(0);
+                // nuevo_valor_us_ope = (precio_us_ow / descuento_operador).toFixed(0);
+                // console.log(precio_mxn_ow + '/'+descuento_operador + '='+ nuevo_valor_mx_ope);
+                // console.log(precio_us_ow + '/'+descuento_operador + '='+nuevo_valor_us_ope);
+                console.log('VALOR DE DESCUENTO DEL 10% A TRANSFERENCIA Y PAGO AL ABORDAR');
+                valor_descuento_mx_ope = (precio_mxn_rt * new_porcen).toFixed(0);
+                valor_descuento_us_ope = (precio_us_rt  * new_porcen).toFixed(0);
+                console.log(precio_mxn_rt + '*'+new_porcen + '='+ valor_descuento_mx_ope);
+                console.log(precio_us_rt  + '*'+new_porcen + '='+valor_descuento_us_ope); 
+
+                finally_valor_descuento_mx_ope = (precio_mxn_rt - valor_descuento_mx_ope).toFixed(0);
+                finally_valor_descuento_us_ope = (precio_us_rt  - valor_descuento_us_ope).toFixed(0); 
+                console.log('EL NUEVO VALOR DE DESCUENTO DEL 10% A TRANSFERENCIA Y PAGO AL ABORDAR');
+                console.log(precio_mxn_rt + '-'+valor_descuento_mx_ope + '='+ finally_valor_descuento_mx_ope);
+                console.log(precio_us_rt  + '-'+valor_descuento_us_ope + '='+finally_valor_descuento_us_ope);
+                
+                console.log('VALOR DE DESCUENTO DEL 10% AL TARJETA Y PAYPAL');
+                valor_descuento_mx_ope_tp = (nuevo_valor_mx * new_porcen).toFixed(0);
+                valor_descuento_us_ope_tp = (nuevo_valor_us * new_porcen).toFixed(0); 
+                console.log(nuevo_valor_mx + '*'+new_porcen + '='+ valor_descuento_mx_ope_tp);
+                console.log(nuevo_valor_us + '*'+new_porcen + '='+valor_descuento_us_ope_tp);
+
+                finally_valor_descuento_mx_ope_tp = (nuevo_valor_mx - valor_descuento_mx_ope_tp).toFixed(0);
+                finally_valor_descuento_us_ope_tp = (nuevo_valor_us - valor_descuento_us_ope_tp).toFixed(0); 
+                console.log('EL NUEVO VALOR DE DESCUENTO DEL 10% AL TARJETA Y PAYPAL');
+                console.log(nuevo_valor_mx + '-'+valor_descuento_mx_ope_tp + '='+ finally_valor_descuento_mx_ope_tp);
+                console.log(nuevo_valor_us + '-'+valor_descuento_us_ope_tp + '='+ finally_valor_descuento_us_ope_tp);
+
                 $('#info_import').text(nuevo_valor_mx);
                 $('#inp_amount_total_mxn').val(precio_mxn_rt);
                 $('#inp_amount_total_usd').val(precio_us_rt);
                 $('#_TOTAL_MXN').val(nuevo_valor_mx);
                 $('#_TOTAL_USD').val(nuevo_valor_us);
                 $('#_AMOUNT_TOTAL').val(nuevo_valor_mx);
+                if (id_operadora == 1) {
+                    $('#_AMOUNT_TOTAL').val(finally_valor_descuento_mx_ope_tp);              
+                    $('#info_import').text(finally_valor_descuento_mx_ope_tp);
+                    $('#descuento_resumen_operadora').val(valor_descuento_mx_ope_tp);
+                }
                 $('#info_import').attr('data-ratemx', precio_mxn_rt);
                 $('#info_import').attr('data-rateus', precio_us_rt);
                 $('#info_import').attr('data-ratemx_c', nuevo_valor_mx);
                 $('#info_import').attr('data-rateus_c', nuevo_valor_us);
                 $('#info_import').attr('data-discountmx', valor_descuento_mx);
                 $('#info_import').attr('data-discountus', valor_descuento_us);
+                $('#info_import').attr('data-operator', id_operadora);
+                $('#info_import').attr('data-ratemx_ope', finally_valor_descuento_mx_ope);
+                $('#info_import').attr('data-rateus_ope', finally_valor_descuento_us_ope);
+                $('#info_import').attr('data-discountmxope', valor_descuento_mx_ope);
+                $('#info_import').attr('data-discountusope', valor_descuento_us_ope);
+
+                $('#info_import').attr('data-ratemx_ope_tp', finally_valor_descuento_mx_ope_tp);
+                $('#info_import').attr('data-rateus_ope_tp', finally_valor_descuento_us_ope_tp);
+                $('#info_import').attr('data-discountmxope_tp', valor_descuento_mx_ope_tp);
+                $('#info_import').attr('data-discountusope_tp', valor_descuento_us_ope_tp);
+                
             }
             if (a_traslado == 'SEN/AH' || a_traslado == 'SEN/HA' || a_traslado == 'SEN/HH') {
                 nuevo_valor_mx = (precio_mxn_ow / cargo).toFixed(0);
                 nuevo_valor_us = (precio_us_ow / cargo).toFixed(0); 
+                valor_descuento_mx = (nuevo_valor_mx * descuento).toFixed(0);
+                valor_descuento_us = (nuevo_valor_us * descuento).toFixed(0); 
+
+                //Operator
+                // nuevo_valor_mx_ope = (precio_mxn_ow / descuento_operador).toFixed(0);
+                // nuevo_valor_us_ope = (precio_us_ow / descuento_operador).toFixed(0);
+                // console.log(precio_mxn_ow + '/'+descuento_operador + '='+ nuevo_valor_mx_ope);
+                // console.log(precio_us_ow + '/'+descuento_operador + '='+nuevo_valor_us_ope);
+                console.log('VALOR DE DESCUENTO DEL 10% A TRANSFERENCIA Y PAGO AL ABORDAR');
+                valor_descuento_mx_ope = (precio_mxn_ow * new_porcen).toFixed(0);
+                valor_descuento_us_ope = (precio_us_ow  * new_porcen).toFixed(0);
+                console.log(precio_mxn_ow + '*'+new_porcen + '='+ valor_descuento_mx_ope);
+                console.log(precio_us_ow  + '*'+new_porcen + '='+valor_descuento_us_ope); 
+
+                finally_valor_descuento_mx_ope = (precio_mxn_ow - valor_descuento_mx_ope).toFixed(0);
+                finally_valor_descuento_us_ope = (precio_us_ow  - valor_descuento_us_ope).toFixed(0); 
+                console.log('EL NUEVO VALOR DE DESCUENTO DEL 10% A TRANSFERENCIA Y PAGO AL ABORDAR');
+                console.log(precio_mxn_ow + '-'+valor_descuento_mx_ope + '='+ finally_valor_descuento_mx_ope);
+                console.log(precio_us_ow  + '-'+valor_descuento_us_ope + '='+finally_valor_descuento_us_ope);
+                
+                console.log('VALOR DE DESCUENTO DEL 10% AL TARJETA Y PAYPAL');
+                valor_descuento_mx_ope_tp = (nuevo_valor_mx * new_porcen).toFixed(0);
+                valor_descuento_us_ope_tp = (nuevo_valor_us * new_porcen).toFixed(0); 
+                console.log(nuevo_valor_mx + '*'+new_porcen + '='+ valor_descuento_mx_ope_tp);
+                console.log(nuevo_valor_us + '*'+new_porcen + '='+valor_descuento_us_ope_tp);
+
+                finally_valor_descuento_mx_ope_tp = (nuevo_valor_mx - valor_descuento_mx_ope_tp).toFixed(0);
+                finally_valor_descuento_us_ope_tp = (nuevo_valor_us - valor_descuento_us_ope_tp).toFixed(0); 
+                console.log('EL NUEVO VALOR DE DESCUENTO DEL 10% AL TARJETA Y PAYPAL');
+                console.log(nuevo_valor_mx + '-'+valor_descuento_mx_ope_tp + '='+ finally_valor_descuento_mx_ope_tp);
+                console.log(nuevo_valor_us + '-'+valor_descuento_us_ope_tp + '='+ finally_valor_descuento_us_ope_tp);
+
                 $('#inp_amount_total_mxn').val(precio_mxn_ow);
                 $('#inp_amount_total_usd').val(precio_us_ow);
                 $('#_TOTAL_MXN').val(nuevo_valor_mx);
                 $('#_TOTAL_USD').val(nuevo_valor_us);
-                $('#_AMOUNT_TOTAL').val(nuevo_valor_mx);
-                valor_descuento_mx = (nuevo_valor_mx * descuento).toFixed(0);
-                valor_descuento_us = (nuevo_valor_us * descuento).toFixed(0);               
+                $('#_AMOUNT_TOTAL').val(nuevo_valor_mx);              
                 $('#info_import').text(nuevo_valor_mx);
+                if (id_operadora == 1) {
+                    $('#_AMOUNT_TOTAL').val(finally_valor_descuento_mx_ope_tp);              
+                    $('#info_import').text(finally_valor_descuento_mx_ope_tp);
+                    $('#descuento_resumen_operadora').val(valor_descuento_mx_ope_tp);
+                }
                 $('#info_import').attr('data-ratemx', precio_mxn_ow);
                 $('#info_import').attr('data-rateus', precio_us_ow);
                 $('#info_import').attr('data-ratemx_c', nuevo_valor_mx);
                 $('#info_import').attr('data-rateus_c', nuevo_valor_us);
                 $('#info_import').attr('data-discountmx', valor_descuento_mx);
                 $('#info_import').attr('data-discountus', valor_descuento_us);
+                $('#info_import').attr('data-operator', id_operadora);
+                $('#info_import').attr('data-ratemx_ope', finally_valor_descuento_mx_ope);
+                $('#info_import').attr('data-rateus_ope', finally_valor_descuento_us_ope);
+                $('#info_import').attr('data-discountmxope', valor_descuento_mx_ope);
+                $('#info_import').attr('data-discountusope', valor_descuento_us_ope);
+
+                $('#info_import').attr('data-ratemx_ope_tp', finally_valor_descuento_mx_ope_tp);
+                $('#info_import').attr('data-rateus_ope_tp', finally_valor_descuento_us_ope_tp);
+                $('#info_import').attr('data-discountmxope_tp', valor_descuento_mx_ope_tp);
+                $('#info_import').attr('data-discountusope_tp', valor_descuento_us_ope_tp);
+                
+                
             }
 
             switch (a_traslado) {
@@ -571,35 +703,79 @@ $(document).on('click', '#btn-anuncio', function(){
 
         //Select payment
         $(document).on('change', '#mpago_resumen', function(){
+            $("#check_electronic_purse").prop('checked', false);
+            $('#content_descuento_electronic').hide('slow');
             $('#cservicio_resumen').val('0.00');
+            let a_traslado = $('#inp_type_traslate').val();
+            let paypal = $('#inp_paypal').val();
+            let cash = $('#inp_cash').val();
+            let card = $('#inp_card').val();
+            let id_operadora = $('#inp_operadora').val();
             let value = "";
             let type_change = "";
             let descuento = "";
+            let descuento_ope = "";
             var mx = 0;
             var us = 0;
+            var mx_ope = 0;
+            var us_ope = 0;
+            var operator = $('#info_import').data('operator'); //getter
+            
+            if (paypal == 1) {
+                $('#option_paypal').show();
+            }
+            if (card == 1) {
+                $('#option_card').show();
+            }
+            if (cash == 1 && (a_traslado == 'RED' || a_traslado == "SEN/AH")) {
+                $('#option_cash').show();
+            }
             value = $(this).val();
-            type_change = $('#select_type_change').val();
+            type_change = $('#select_type_change').val();                
+            if (id_operadora == 1) {
+                $('.content_descuento_operadora').show();
+            }
             if (value == 'transfer' || value == 'airport') {
                 $('#_PAYMENT').val('transfer');
                 mx = $('#info_import').data('ratemx'); //getter
                 us = $('#info_import').data('rateus'); //getter
                 $('#_TOTAL_MXN').val(mx);
                 $('#_TOTAL_USD').val(us);
+                if (operator == 1) {
+                    mx_ope = $('#info_import').data('ratemx_ope'); //getter
+                    us_ope = $('#info_import').data('rateus_ope'); //getter    
+                    $('#_TOTAL_MXN').val(mx_ope);
+                    $('#_TOTAL_USD').val(us_ope);
+                }
                 $('#_CHARGE_SERVICE').val('0.00');
                 $('#_AMOUNT_TOTAL').val('0.00');
                 if (type_change == 'mxn') {
                     descuento = $('#info_import').data('discountmx');
                     $('#info_import').text(mx);
                     $('#_AMOUNT_TOTAL').val(mx);
+                    if (operator == 1) {
+                        descuento_ope = $('#info_import').data('discountmxope');
+                        $('#info_import').text(mx_ope);
+                        $('#_AMOUNT_TOTAL').val(mx_ope);
+                    }
                 }
                 if (type_change == 'usd') {
                     descuento = $('#info_import').data('discountus');
                     $('#info_import').text(us);
                     $('#_AMOUNT_TOTAL').val(us);
+                    if (operator == 1) {
+                        descuento_ope = $('#info_import').data('discountusope');
+                        $('#info_import').text(us_ope);
+                        $('#_AMOUNT_TOTAL').val(us_ope);
+                    }
                 }
                 $('.content_cservicio').hide('slow');
                 $('.content_descuento').show('slow');
+
                 $('#descuento_resumen').val('$ '+descuento);
+                if (operator == 1) {
+                    $('#descuento_resumen_operadora').val('$ '+descuento_ope);
+                }
             }
             if (value == 'card' || value == "paypal") {
                 $('#_PAYMENT').val('card');
@@ -607,70 +783,193 @@ $(document).on('click', '#btn-anuncio', function(){
                 us = $('#info_import').data('rateus_c'); //getter
                 $('#_TOTAL_MXN').val(mx);
                 $('#_TOTAL_USD').val(us);
+                if (operator == 1) {
+                    mx_ope = $('#info_import').data('ratemx_ope_tp'); //getter
+                    us_ope = $('#info_import').data('rateus_ope_tp'); //getter    
+                    $('#_TOTAL_MXN').val(mx_ope);
+                    $('#_TOTAL_USD').val(us_ope);
+                }
                 if (type_change == 'mxn') {
                     $('#info_import').text(mx);
                     $('#_AMOUNT_TOTAL').val(mx);
+                    if (operator == 1) {
+                        descuento_ope = $('#info_import').data('discountmxope_tp');
+                        $('#info_import').text(mx_ope);
+                        $('#_AMOUNT_TOTAL').val(mx_ope);
+                    }
                 }
                 if (type_change == 'usd') {
                     $('#info_import').text(us);
                     $('#_AMOUNT_TOTAL').val(us);
+                    if (operator == 1) {
+                        descuento_ope = $('#info_import').data('discountusope_tp');
+                        $('#info_import').text(us_ope);
+                        $('#_AMOUNT_TOTAL').val(us_ope);
+                    }
                 }
                 $('#descuento_resumen').val('');
                 $('.content_cservicio').show('slow');
                 $('.content_descuento').hide('slow');
+                if (operator == 1) {
+                    $('#descuento_resumen_operadora').val('$ '+descuento_ope);
+                }
             }
         });
 
         //Select change type
         $(document).on('change', '#select_type_change', function(){
+            $("#check_electronic_purse").prop('checked', false);
+            $('#content_descuento_electronic').hide('slow');
             $('#cservicio_resumen').val('0.00');
             let value = "";
             let mpago = "";
             let descuento = "";
+            let descuento_ope = "";
             var mx = 0;
             var us = 0;
+            var mx_ope = 0;
+            var us_ope = 0;
+            var operator = $('#info_import').data('operator'); //getter
             value = $(this).val();
             mpago = $('#mpago_resumen').val();
             if (value == 'mxn') {
                 $('#_TYPE_CURRENCY').val('MXN');
-                if (mpago == 'transfer') {
+                if (mpago == 'transfer' || mpago == 'airport') {
                     mx = $('#info_import').data('ratemx'); //getter
                     descuento = $('#info_import').data('discountmx');
                     $('#info_import').text(mx); 
                     $('#_AMOUNT_TOTAL').val(mx);
+                    if (operator == 1) {
+                        mx_ope = $('#info_import').data('ratemx_ope'); //getter
+                        descuento_ope = $('#info_import').data('discountmxope');
+                        $('#info_import').text(mx_ope); 
+                        $('#_AMOUNT_TOTAL').val(mx_ope);
+                    }
                 }
-                if (mpago == 'card') {
+                if (mpago == 'card' || mpago == 'paypal') {
                     mx = $('#info_import').data('ratemx_c'); //getter
                     $('#info_import').text(mx); 
                     $('#_AMOUNT_TOTAL').val(mx);
+                    if (operator == 1) {
+                        mx_ope = $('#info_import').data('ratemx_ope_tp'); //getter
+                        descuento_ope = $('#info_import').data('discountmxope_tp');
+                        $('#info_import').text(mx_ope); 
+                        $('#_AMOUNT_TOTAL').val(mx_ope);
+                    }
                 }
             }
             if (value == 'usd') {
                 $('#_TYPE_CURRENCY').val('USD');
-                if (mpago == 'transfer') {
+                if (mpago == 'transfer' || mpago == 'airport') {
                     us = $('#info_import').data('rateus'); //getter
                     descuento = $('#info_import').data('discountus');
                     $('#info_import').text(us);
                     $('#_AMOUNT_TOTAL').val(us);
+                    if (operator == 1) {
+                        us_ope = $('#info_import').data('rateus_ope'); //getter
+                        descuento_ope = $('#info_import').data('discountusope');
+                        $('#info_import').text(us_ope);
+                        $('#_AMOUNT_TOTAL').val(us_ope);
+                    }
                 }
-                if (mpago == 'card') {
+                if (mpago == 'card' || mpago == 'paypal') {
                     us = $('#info_import').data('rateus_c'); //getter
                     $('#info_import').text(us);
                     $('#_AMOUNT_TOTAL').val(us);
+                    if (operator == 1) {
+                        us_ope = $('#info_import').data('rateus_ope_tp'); //getter
+                        descuento_ope = $('#info_import').data('discountusope_tp');
+                        $('#info_import').text(us_ope);
+                        $('#_AMOUNT_TOTAL').val(us_ope);
+                    }
                 }
             }
             $('#descuento_resumen').val('$ '+descuento);
+            if (operator == 1) {
+                $('#descuento_resumen_operadora').val('$ '+descuento_ope);
+            }
+        });
+        
+
+        $(document).on('click', '#check_electronic_purse', function(){
+            var seleccion_ep = $("#check_electronic_purse")[0].checked;
+            var comision = 0;
+            if (comision != 0) {
+                comision = $('#cservicio_resumen').val();
+            }
+            if (seleccion_ep == true) {
+                let total = $('#info_import').text();
+                let currency = $('#select_type_change').val();
+                let before_electronic_purse = $('#inp_electronic').val();
+                let change_type = $('#inp_change_type').val();
+                let discount_electronic_purse = "";
+                let resta = total;
+                if (currency == 'usd') {
+                    discount_electronic_purse = Math.round(parseFloat(before_electronic_purse) / parseFloat(change_type));
+                }else{
+                    discount_electronic_purse = before_electronic_purse;
+                }
+                if (discount_electronic_purse != 0) {
+                    resta = Math.round(parseFloat(total) - parseFloat(discount_electronic_purse));
+                }
+                $('#content_descuento_electronic').show('slow');
+                let curr = "MXN";
+                if (currency == 'usd') {
+                    curr = "USD";
+                }
+                $('#inp_discount_electronic').val(discount_electronic_purse + ' ' + curr);
+                $('#info_import').text(resta);
+            }else{
+                $('#cservicio_resumen').val('');
+                $('#content_descuento_electronic').hide('slow');
+                let id_operadora = $('#inp_operadora').val();
+                let type_payment = $('#_PAYMENT').val();
+                var newtotal = 0;
+                let rate_mx =$('#info_import').data('ratemx');
+                let rate_us =$('#info_import').data('rateus');
+                if(type_payment == 'card' || type_payment == 'paypal'){
+                    rate_mx =$('#info_import').data('ratemx_c');
+                    rate_us =$('#info_import').data('rateus_c');
+                }
+                if (id_operadora == 1) {
+                    rate_mx =$('#info_import').data('ratemx_ope_tp');
+                    rate_us =$('#info_import').data('rateus_ope_tp');
+                }
+                let currency = $('#select_type_change').val();
+                var subtotal = currency == 'usd' ? rate_us : rate_mx;
+                
+                $('#_CHARGE_SERVICE').val(comision);  
+                let subtotal_card_paypal = "";
+                newtotal = parseFloat(subtotal) + parseFloat(comision);
+                if(type_payment == 'card' || type_payment == 'paypal'){
+                    subtotal_card_paypal = Math.round(parseFloat(subtotal) * 0.05);
+                    newtotal = Math.round(((parseFloat(subtotal) - subtotal_card_paypal)+ parseFloat(comision)) / .95);
+                }   
+                $('#info_import').text(newtotal);
+                $('#_AMOUNT_TOTAL').val(newtotal);
+                if( isNaN(parseFloat(comision)) == true ) {
+                    $('#info_import').text(parseFloat(subtotal));
+                }
+
+            }
+
         });
         
         $('#cservicio_resumen').on('keyup', function(e){
             if ($(this).val() == null || $(this).val() == "") {
                 $(this).val('0.00');
                 $('#_CHARGE_SERVICE').val('0.00');
-
+            }
+            let id_operadora = $('#inp_operadora').val();
+            let rate_mx =$('#info_import').data('ratemx_c');
+            let rate_us =$('#info_import').data('rateus_c');
+            if (id_operadora == 1) {
+                rate_mx =$('#info_import').data('ratemx_ope_tp');
+                rate_us =$('#info_import').data('rateus_ope_tp');
             }
             var sale = {
-                'subtotalmx' : $('#info_import').data('ratemx_c'),
-                'subtotalus' : $('#info_import').data('rateus_c'),
+                'subtotalmx' : rate_mx,
+                'subtotalus' : rate_us,
                 'commission' : $(this).val(),
                 'currency' : $('#select_type_change').val()
             };
@@ -678,12 +977,30 @@ $(document).on('click', '#btn-anuncio', function(){
                 $('#cservicio_resumen').val('');
                 $('#cservicio_resumen').focus();
                 return false;
+            } 
+            var seleccion_ep = $("#check_electronic_purse")[0].checked;
+            let discount_electronic_purse = 0;
+            if (seleccion_ep) {
+                discount_electronic_purse = $('#inp_electronic').val();
             }
-            
             var subtotal = sale.currency == 'usd' ? sale.subtotalus : sale.subtotalmx; 
-            
-            $('#_CHARGE_SERVICE').val(sale.commission);       
-            sale.total = parseFloat(subtotal) + parseFloat(sale.commission);
+            $('#_CHARGE_SERVICE').val(sale.commission);  
+            let type_payment = $('#_PAYMENT').val();
+            let subtotal_card_paypal = "";
+            if (discount_electronic_purse != 0) {
+                sale.total = Math.round((parseFloat(subtotal) + parseFloat(sale.commission)) - parseFloat(discount_electronic_purse));
+            }else{
+                sale.total = Math.round(parseFloat(subtotal) + parseFloat(sale.commission));
+            }
+            if(type_payment == 'card' || type_payment == 'paypal'){
+                if (discount_electronic_purse != 0) {
+                    subtotal_card_paypal = Math.round(parseFloat(subtotal) * 0.05);
+                    sale.total = Math.round((((parseFloat(subtotal) - subtotal_card_paypal)+ parseFloat(sale.commission)) / .95) - parseFloat(discount_electronic_purse));
+                }else{
+                    subtotal_card_paypal = Math.round(parseFloat(subtotal) * 0.05);
+                    sale.total = Math.round(((parseFloat(subtotal) - subtotal_card_paypal)+ parseFloat(sale.commission)) / .95);
+                }
+            }   
             $('#info_import').text(sale.total);
             $('#_AMOUNT_TOTAL').val(sale.total);
             if( isNaN(parseFloat(sale.commission)) == true ) {
@@ -697,12 +1014,17 @@ $(document).on('click', '#btn-anuncio', function(){
             value = $(this).val();
             $('#_LETTER_LANGUAGE').val(value);
         });
+        // $(document).on('click', '.options', function(){
+        //     let val = $(this).val();
+        //     alert(val);
+        // });
         //Finalizar reservacion
         $(document).on('click','#finish_reserv', function(){
             let status_reserv= 0;
             let type_service = "";
             let name_client = $('#inp_name_client').val();
             let lastname_client = $('#inp_lastname_client').val();
+            let mother_lastname = $('#inp_mother_lastname').val();
             let phone_client = $('#inp_phone_client').val();
             let email_client = $('#inp_email_client').val();
             let country_client = $('#inp_country_client').val();
@@ -710,7 +1032,7 @@ $(document).on('click', '#btn-anuncio', function(){
             let method_payment = $('#mpago_resumen').val();
             let letter_lang = $('#idioma_resumen').val();
             let co_yt = $('#inp_internal_yt').val();
-            let name_asesor = $('#inp_asesor').val();
+            let name_asesor = "";
             let time = "";
             let time_exit = "";
             let time_pickup = "";
@@ -721,6 +1043,23 @@ $(document).on('click', '#btn-anuncio', function(){
             let of_the_agency = "";
             let nofly_exit ="";
             var code_reser = "";
+            var traslado = $('#_TYPE_TRANSFER').val();
+            let time_service = "";
+            if (traslado == 'compartido') {
+                if(!$("#content_check_btns input[name='options']").is(':checked')){
+                    $("#alert-msg").show('slow');
+                    $("#alert-msg").addClass('alert-danger');
+                    $('#text_time_service').addClass(' text-danger');
+                    $msg = "Favor de seleccionar un horario de abordaje";
+                    $('#text-msg').val($msg);
+                    $("html, body").animate({scrollTop: 0}, 1000);
+                    setTimeout(function(){ $("#alert-msg").hide('slow'); }, 3000);
+                    return false;
+                }else{
+                    time_service = $("#content_check_btns input[name='options']:checked").val();
+                    $('#text_time_service').removeClass(' text-danger');
+                }
+            }
 
             if ($('#_TYPE_SERVICE').val()) {
                 type_service = $('#_TYPE_SERVICE').val();
@@ -728,6 +1067,9 @@ $(document).on('click', '#btn-anuncio', function(){
             if (co_yt == 1) {   
                 //Reservaciones hechas para agencias por parte de Yamevi         
                 code_reser = $('#inp_reserv_ex').val();
+                if ($('#inp_asesor').val()) {
+                    name_asesor = $('#inp_asesor').val();
+                }
             }
             if (type_service == 'SEN/AH' || type_service == "RED") {
                 airline_entry = $('#inp_airline_entry').val();
@@ -813,7 +1155,6 @@ $(document).on('click', '#btn-anuncio', function(){
                 $('#inp_country_client').focus();
                 return false;
             }
-            
             if (letter_lang == null || letter_lang.length == 0 || /^\s+$/.test(letter_lang)) {
                 $('#idioma_resumen').addClass(" is-invalid");
                 $('#idioma_resumen').focus();
@@ -826,7 +1167,16 @@ $(document).on('click', '#btn-anuncio', function(){
                 $('.invalid-feedback').removeClass('d-none');
                 return false;
             }
-
+            var seleccion_ep = $("#check_electronic_purse")[0].checked;
+            let discount_electronic_purse = 0;
+            if (seleccion_ep) {
+                discount_electronic_purse = $('#inp_electronic').val();
+            }
+            var seleccion_ceros = $("#check_ceros")[0].checked;
+            let ceros = 0;
+            if(seleccion_ceros){
+                ceros = 1;
+            }
             var agencie = $('#_AGENCIE').val();
             if ($('#inp_of_agency').val()) {
                 of_the_agency = $('#inp_of_agency').val();
@@ -837,7 +1187,7 @@ $(document).on('click', '#btn-anuncio', function(){
             var hotel = $('#_ORIGIN_HOTEL').val();
             var hotel_destino = $('#_DESTINY_HOTEL').val();
             var pasajeros = $('#_NUMBER_PAS').val();
-            var traslado = $('#_TYPE_TRANSFER').val();
+
             var tipo_servicio = $('#_TYPE_SERVICE').val();
             
             var date_entry = $('#_DATE_ENTRY').val();
@@ -855,7 +1205,13 @@ $(document).on('click', '#btn-anuncio', function(){
             new_sub_total_mx = parseFloat(sub_total).toFixed(2);
             sub_total_us = $('#_TOTAL_USD').val();
             new_sub_total_us = parseFloat(sub_total_us).toFixed(2);
-        
+            if (method_payment == 'card' || method_payment == 'paypal') {
+                sub_total = $('#inp_amount_total_mxn').val();
+                new_sub_total_mx = parseFloat(sub_total).toFixed(2);
+                sub_total_us = $('#inp_amount_total_usd').val();
+                new_sub_total_us = parseFloat(sub_total_us).toFixed(2);
+                
+            }
             var charge_service = 0;
             charge_service = $('#_CHARGE_SERVICE').val();
             if ($('#_AMOUNT_TOTAL').val()) {
@@ -871,6 +1227,7 @@ $(document).on('click', '#btn-anuncio', function(){
                 'of_the_agency': of_the_agency,
                 'name_client': name_client,
                 'lastname_client':lastname_client,
+                'mother_lastname':mother_lastname,
                 "email_client": email_client,
                 'phone_client': phone_client,
                 'country': country_client,
@@ -890,6 +1247,7 @@ $(document).on('click', '#btn-anuncio', function(){
                 'pick_up_inter': time_pickup_inter,
                 'airline_exit': airline_exit,
                 'nofly_exit':nofly_exit,
+                'time_service': time_service,
                 'currency': t_currency,
                 'type_change': t_cambio,
                 'method_peyment':method_payment,
@@ -897,7 +1255,9 @@ $(document).on('click', '#btn-anuncio', function(){
                 'total_usd': new_sub_total_us,
                 'service_charge': charge_service,
                 "amount_total":amount_total,
+                'discount_electronic_purse': discount_electronic_purse,
                 "letter_lang": letter_language,
+                'ceros': ceros,
                 "status": status_reserv
             };
             $.ajax({
@@ -917,9 +1277,10 @@ $(document).on('click', '#btn-anuncio', function(){
 
                 },
                 success: function(data){
-                    //var res = $.parseJSON(data);
                     $(".loader").fadeOut("slow");
-                    if (data != 0) {
+                    console.log(data);
+                    const res = JSON.parse(data);
+                    if (res.status != 0) {
                         if (method_payment == 'transfer' || method_payment == 'airport') {
                             $('#myModal').modal('show');
                             $('#msj_success').text('Su reservación ha sido creada satisfactoriamente, en breve recibirá su carta de confirmación.');  
@@ -956,7 +1317,11 @@ $(document).on('click', '#btn-anuncio', function(){
                         $('#p_amount').val(amount_total);
                         $('#p_invoice').val(res.invoice);
                         if (res.status == 1) {
-                                $('#paypalPayment').submit();
+                                $('#myModal').modal('show');
+                                $('#btn_succes_r').hide();
+                                $('#msj_success').text('Su reservación ha sido creada satisfactoriamente, en breve sera redireccionado.');  
+                                setTimeout(function(){ $('#paypalPayment').submit(); }, 1000);
+                                
                         }else{
                             $('#myModalerror').modal('show');
                         }
@@ -972,7 +1337,11 @@ $(document).on('click', '#btn-anuncio', function(){
                         $('#_AMOUNT_TOTAL').val(postDatas.amount_total);
 
                         $('#inps_store').attr('action','/es/secciones/checkout.php');
-                            $('#inps_store').submit();
+                            $('#myModal').modal('show');
+                            $('#btn_succes_r').hide();
+                            $('#msj_success').text('Su reservación ha sido creada satisfactoriamente, en breve sera redireccionado.');  
+                            setTimeout(function(){ $('#inps_store').submit(); }, 1000);
+                            
                     }
                 }
             });
@@ -995,19 +1364,19 @@ $(document).on('click', '#btn-anuncio', function(){
             }
             var new_time = 0; 
             if (time.service == 'compartido') {
-                if (parseInt(time.hour) <= 7 || parseInt(time.hour) >= 20) {
+                if (parseInt(time.hour) == 0) {
                     $('#inp_hour_entry').addClass(" is-invalid");
                     $('#inp_hour_entry').focus();
                     $("#alert-msg").show('slow');
                     $("#alert-msg").addClass('alert-danger');
                     $msg = "El servicio COMPARTIDO sólo se encuentra disponible para llegadas de 08:00 HRS a 20:00 HRS";
+                    setTimeout(function(){ $("#alert-msg").hide('slow'); }, 3000);
                     $('#text-msg').val($msg);
                     $("html, body").animate({scrollTop: 0}, 1000);
                     return new_time;
                 }
                 
                 if (parseInt(time.hour) >= 8 && parseInt(time.hour) <= 19) {
-                    $("#alert-msg").hide('slow');
                     new_time = time.hour + ':' + time.minute + ' '+ 'Hrs';
                     return new_time;
                 }
@@ -1033,17 +1402,17 @@ $(document).on('click', '#btn-anuncio', function(){
             }
             var new_time = 0; 
             if (time.service == 'compartido') {
-                if (parseInt(time.hour) <= 7 || parseInt(time.hour) >= 20) {
+                if (parseInt(time.hour) == 0) {
                     $("html, body").animate({scrollTop: 0}, 1000);
                     $('#inp_hour_exit').focus();
                     $("#alert-msg").show('slow');
                     $("#alert-msg").addClass('alert-danger');
                     $msg = "El servicio COMPARTIDO sólo se encuentra disponible para salidas de 08:00 HRS a 20:00 HRS";
                     $('#text-msg').val($msg);
+                    setTimeout(function(){ $("#alert-msg").hide('slow'); }, 3000);
                     return new_time;
                 }
                 if (parseInt(time.hour) >= 8 && parseInt(time.hour) <= 19) {
-                    $("#alert-msg").hide('slow');
                     new_time = time.hour + ':' + time.minute + ' '+ 'Hrs';
                     return new_time;
                 }
@@ -1066,6 +1435,7 @@ $(document).on('click', '#btn-anuncio', function(){
             if (parseInt(time.hour) <= 0 || parseInt(time.hour) > 23) {
                 $("#alert-msg").show('slow');
                 $("#alert-msg").addClass('alert-danger');
+                setTimeout(function(){ $("#alert-msg").hide('slow'); }, 3000);
                 $msg = "Debes ingresar una hora entre 1 - 23";
                 $('#text-msg').val($msg);
                 $('#inp_hour_pick').focus();
@@ -1074,6 +1444,7 @@ $(document).on('click', '#btn-anuncio', function(){
             if (parseInt(time.minute) < 0 || parseInt(time.minute) > 59) {
                 $("#alert-msg").show('slow');
                 $("#alert-msg").addClass('alert-danger');
+                setTimeout(function(){ $("#alert-msg").hide('slow'); }, 3000);
                 $msg = "Debes ingresar un minute entre 1 - 59";
                 $('#text-msg').val($msg);
                 $('#inp_minute_pick').focus();

@@ -1,9 +1,10 @@
 
 <?php  
  session_start();  
- if (isset($_SESSION['id_agency'])) {
-      header("location: home.php");
-}else {
+
+ if (isset($_SESSION['yt_id_agency'])) {
+    header('location: home.php');
+}else{
 }
  ?>
 
@@ -23,6 +24,10 @@
    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+   <div id="loading">
+    <div class="loader">
+    </div> 
+   </div>
 </head>
 <body>	
 	<div class="sidenav_agencies">
@@ -35,17 +40,17 @@
     <div class="main">
         <div class="col-md-6 col-sm-12">
             <div class="login-form">
-              <form method="POST" >
+              <form method="POST" name="login" id="login">
                  <div class="form-group title-login-agen">
                     <h2>Iniciar Sesión</h2>
                  </div>
                  <div class="form-group">
                     <label>Email / Usuario</label>
-                    <input type="text" class="form-control" name="email" value=""  placeholder="Email" >
+                    <input type="text" class="form-control" name="email" id="email" value=""  placeholder="Email" >
                  </div>
                  <div class="form-group">
                     <label>Password</label>
-                    <input type="password" class="form-control" name="password" value="" placeholder="Password" >
+                    <input type="password" class="form-control" name="password"  id="password" value="" placeholder="Password" >
                  </div>
                  <div class="form-group">
                    <a href="#"><i>Olvidaste tu contraseña?</i></a>
@@ -53,7 +58,12 @@
                  <div class="form-group">
                   <div class="row">
                        <div class="col-lg-6">
-			  	        	      <button type="submit" class="btn btn-login-agencies btn-block">Ingresar</button>
+			  	        	      <button type="submit" id="btn_login" class="btn btn-login-agencies btn-block">Ingresar</button>
+                           <div class=" btn_load btn_load_black btn-block mt-0">
+                                <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+                                <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+                                <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+                           </div>
                        </div>
                         <div class="col-lg-6">
                            <a href="../../index.php" class="btn btn-block btn-outline-primary">Regresar</a>
@@ -61,8 +71,7 @@
                         </div>
                     </div>
                  </div>
-                 <div class="form-group">
-                    <h4><?php $msg ?> </h4>
+                 <div class="form-group" id="error_msg">
                  </div>
 				<!--<div class="d-flex">
 					<a href="#">Forgot your password?</a>
@@ -71,81 +80,14 @@
             </div>
         </div>
     </div>
-</body>
+</body>    
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
+    
+    <script src="../assets/css/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery Custom Scroller CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="../assets/js/login.js"></script>
 </html>
-<?php
-   include('../config/conexion.php');
-
-   if($_SERVER["REQUEST_METHOD"] == "POST") {
-      // username and password sent from form 
-      
-      $myemail = mysqli_real_escape_string($con,$_POST['email']);
-      $mypassword = mysqli_real_escape_string($con,$_POST['password']); 
-      $newpassword = MD5($mypassword);
-      $sql = "SELECT * FROM agencies AS A
-      INNER JOIN agency_payment AS AP ON AP.id_agency = A.id_agency WHERE (A.email_agency = '$myemail' or A.username = '$myemail') and A.password = '$newpassword';";
-      $result = mysqli_query($con,$sql);
-      
-      // If result matched $myusername and $mypassword, table row must be 1 row
-      if ($result) {     
-         $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
-         $count = mysqli_num_rows($result);
-         if (($myemail != '') && ($newpassword !='')) {
-               if ($count == 1) {
-                  if ($row['password'] == $newpassword) {
-                     $_SESSION['id_agency'] = $row['id_agency'];
-                     $_SESSION['name_agency'] = $row['name_agency'];
-                     $_SESSION['username'] =  $row['username'];
-                     $_SESSION['todaysale'] = $row['todaysale'];
-                     $_SESSION['paypal'] = $row['paypal'];
-                     $_SESSION['cash'] = $row['cash'];
-                     $_SESSION['card'] = $row['card'];
-                     $_SESSION['internal_yt'] = $row['internal_yt'];
-                     $agency = $row['name_agency'];
-                     if ($_SESSION['id_agency']) {
-                        header("location: home.php");
-                     }
-                  }else{
-                     $message = '
-                     <div class=" d-flex justify-content-center">
-                        <div class="alert alert-danger alert-error alert-dismissible">
-                           <button type="button" class="close" data-dismiss="alert">&times;</button>
-                           <strong>Error!</strong> Verifique contraseña.
-                        </div>
-                     </div>
-                  ' ;
-                  }
-               }else{
-                  $message = '
-                     <div class=" d-flex justify-content-center">
-                        <div class="alert alert-danger alert-error alert-dismissible">
-                           <button type="button" class="close" data-dismiss="alert">&times;</button>
-                           <strong>Ups!</strong> El email o contraseña es incorrecto.
-                        </div>
-                     </div>
-                  ' ;
-               }
-         }else{
-            $message = '
-               <div class=" d-flex justify-content-center">
-                  <div class="alert alert-danger alert-error alert-dismissible">
-                     <button type="button" class="close" data-dismiss="alert">&times;</button>
-                     <strong>Ups!</strong> Debe llenar todos los campos.
-                  </div>
-               </div>
-            ' ;
-         }
-      }else{
-         $message = '
-         <div class=" d-flex justify-content-center">
-            <div class="alert alert-danger alert-error alert-dismissible">
-               <button type="button" class="close" data-dismiss="alert">&times;</button>
-               <strong>Ups!</strong> El email o contraseña es incorrecto.
-            </div>
-         </div>
-      ' ;
-      }
-
-      echo $message;
-   }
-?>

@@ -11,6 +11,7 @@
             $name_advisor = mysqli_real_escape_string($con,$ins->{'name_advisor'});
             $name_client = mysqli_real_escape_string($con,$ins->{'name_client'});
             $lastname_client = mysqli_real_escape_string($con,$ins->{'lastname_client'});
+            $mother_lastname = mysqli_real_escape_string($con,$ins->{'mother_lastname'});
             $email_client = mysqli_real_escape_string($con, $ins->{'email_client'});
             $phone_client = mysqli_real_escape_string($con, $ins->{'phone_client'});
             $country = mysqli_real_escape_string($con,$ins->{'country'});
@@ -27,6 +28,7 @@
             $pick_up = mysqli_real_escape_string($con,$ins->{'pick_up'});
             $pick_up_inter  = mysqli_real_escape_string($con,$ins->{'pick_up_inter'});
             $airline_exit = mysqli_real_escape_string($con,$ins->{'airline_exit'});
+            $time_service = mysqli_real_escape_string($con,$ins->{'time_service'});
             $nofly_exit = mysqli_real_escape_string($con,$ins->{'nofly_exit'});
             $currency = mysqli_real_escape_string($con,$ins->{'currency'});
             $type_change = mysqli_real_escape_string($con,$ins->{'type_change'});
@@ -39,11 +41,13 @@
             $status = mysqli_real_escape_string($con,$ins->{'status'});
             $date_entry = mysqli_real_escape_string($con,$ins->{'date_entry'});
             $date_exit = mysqli_real_escape_string($con,$ins->{'date_exit'});
+            $total = $ins->{'ceros'};
             $new_time_en = "";
             $new_time_ex = "";
             $new_date_en = "";
             $new_date_ex = "";
             $type_currency ="";
+            
             //Generador de codigo
             $caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             srand((double)microtime()*1000000);
@@ -52,21 +56,19 @@
                 $rand .= $caracteres[rand()%strlen($caracteres)];
             }
             $code_invoice = 'Y'.$rand.'T';
+            $new_value_total_cost ="";
             $new_total_cost = "";
             if ($type_service == 'SEN/HA' ) {
                 $new_time_en = $time_entry;
                 $new_time_ex = $time_exit;
                 $new_date_ex = $date_entry;
                 $new_date_en = "";
-
             }
-            
             if ($type_service == 'RED') {
                 $new_date_en = $date_entry;
                 $new_date_ex = $date_exit;
                 $new_time_en = $time_entry;
                 $new_time_ex = $time_exit;
-
             }
             if ($type_service == 'SEN/AH' ) {
                 $new_time_en = $time_entry;
@@ -89,11 +91,13 @@
             }
             if ($currency == 'MXN') {
                 $type_currency = 'mx';
+                $new_value_total_cost = $total_mxn;
             }else{
                 $type_currency = 'us';
+                $new_value_total_cost = $total_usd;
             }
             //Insertamos datos Reserva
-            $id_agency = $_SESSION['id_agency'];
+            $id_agency = $id_agencie;
 			date_default_timezone_set('America/Cancun');
 			$today = date('Y-m-d');
             $state = "COMPLETED";
@@ -101,7 +105,7 @@
                 $state = "RESERVED";
             }
             //Insertamos datos Clientes
-            $query_client = "INSERT INTO clients(code_client,name_advisor,name_client,last_name,email_client,phone_client,comments_client,country_client)VALUES('$code_reserv','$name_advisor','$name_client','$lastname_client','$email_client','$phone_client','$special_requests','$country');";
+            $query_client = "INSERT INTO clients(code_client,name_advisor,name_client,last_name,mother_lastname,email_client,phone_client,comments_client,country_client)VALUES('$code_reserv','$name_advisor','$name_client','$lastname_client','$mother_lastname','$email_client','$phone_client','$special_requests','$country');";
             $result_client = mysqli_query($con, $query_client);
             $id_client = mysqli_insert_id($con);
             //Insertamos datos Reserva
@@ -110,15 +114,15 @@
             $result_reserv = mysqli_query($con, $query_reserva);
             $id_reserva = mysqli_insert_id($con);
             //Insertamos datos Detalles Reserva
-            $query_detalles = "INSERT INTO reservation_details(id_reservation, date_arrival,date_exit, time_arrival, time_exit, number_adults, agency_commision, total_cost_commision, total_cost, type_currency, change_type, type_service, method_payment, pickup_entry,pickup)
-            VALUES($id_reserva, '$new_date_en', '$new_date_ex', '$new_time_en', '$new_time_ex', $pasajeros,'$service_charge', $amount_total, $total_mxn, '$type_currency', $type_change, '$type_transfer','$method_peyment', '$pick_up', '$pick_up_inter');";
+            $query_detalles = "INSERT INTO reservation_details(id_reservation, date_arrival,date_exit, time_arrival, time_exit, time_service, number_adults, agency_commision, total_cost_commision, total_cost, type_currency, change_type, type_service, method_payment)
+            VALUES($id_reserva, '$new_date_en', '$new_date_ex', '$new_time_en', '$new_time_ex', '$time_service' ,$pasajeros,'$service_charge', $amount_total, $new_value_total_cost, '$type_currency', $type_change, '$type_transfer','$method_peyment');";
             $result_detalles = mysqli_query($con, $query_detalles);
             //Insertamos datos Conciliacion
             $query_concilia = "INSERT INTO conciliation(id_reservation, id_agency, register_date) VALUES($id_reserva, $id_agency, '$today');";
             $result_concilia = mysqli_query($con, $query_concilia);
             //Diseño de carta de confirmacion
             if ($result_reserv && $result_detalles && $result_concilia && $result_client) {
-                $letter = $this->createLetterConfirm($id_reserva,$letter_lang,$con, $ticket ="", $total="");
+                $letter = $this->createLetterConfirm($id_reserva,$letter_lang,$con, $ticket =0, $total);
                 return $letter;
             }else{
                 $error = '0';
@@ -134,9 +138,11 @@
             $traslados = $ins->{'traslado'};
             $f_llegada = $ins->{'date_star'};
             $f_salida = $ins->{'date_end'};
+            $operadora = 0;
             $rate_service_shared = '';
             $rate_service_private = '';
             $rate_service_luxury = '';
+            $discount = 0;
 
             //Validamos si es Inter Hotel
             if ($traslados == 'REDHH' || $traslados == 'SEN/HH') {
@@ -147,6 +153,19 @@
             if ($this->verifyDestionation($ins->{'hotel'}, $con) == false) {
                 return NULL;
                 exit;
+            }
+            if ($ins->{'operadora'}) {
+                $operadora = $ins->{'operadora'};
+                if ($operadora == 1) {
+                    $sql_operadora = "SELECT * FROM discounts WHERE type_discounts = 'OPERATOR AGENCIES DISCOUNT' and status = 1;";
+                    $result_operadora = mysqli_query($con, $sql_operadora);
+                    $ins_t = mysqli_fetch_object($result_operadora);
+                    if (isset($ins_t->amount_discounts)) {
+                        $discount = $ins_t->amount_discounts;
+                    }
+                }else{
+                    $discount = 0;
+                }
             }
             //Obetnemos el tipo de moneda
             $moneda = $this->getDivisa('mxn', $con);
@@ -172,7 +191,7 @@
                 case 'SEN/HH':
                     $name_traslado = 'Sencillo / Hotel - Hotel';
                     break;
-           }
+            }
 
            //Obtenemos zona de destino
            $zona = json_decode($this->getAreaDestination($ins->{'hotel'}, $con));
@@ -255,7 +274,7 @@
                                 </div>
                                 '.$div_prices_shared.'
                                 <div class="d-flex flex-column mt-4 mb-3">
-                                    <button type="submit" class="btn_animation_2 btn btn-block btn-yamevi" data-tchange="'.$moneda.'" data-fllegada="'.$f_llegada.'" data-fsalida="'.$f_salida.'"  id="init_reserva" data-service ="Shared" data-pasajeros="'.$pasajeros.'" data-type="compartido" data-rate-ow="'.round($rate_service_ow,2).'"  data-rateus-ow = "'.round($rate_service_ow / $moneda,0).'" data-rate-rt="'.round($rate_service_rt,2).'"  data-rateus-rt = "'.round($rate_service_rt / $moneda,0).'"><span>Reservar </span></button>
+                                    <button type="submit" class="btn_animation_2 btn btn-block btn-yamevi" data-tchange="'.$moneda.'" data-operadora="'.$discount.'" data-fllegada="'.$f_llegada.'" data-fsalida="'.$f_salida.'"  id="init_reserva" data-service ="Shared" data-pasajeros="'.$pasajeros.'" data-type="compartido" data-rate-ow="'.round($rate_service_ow,2).'"  data-rateus-ow = "'.round($rate_service_ow / $moneda,0).'" data-rate-rt="'.round($rate_service_rt,2).'"  data-rateus-rt = "'.round($rate_service_rt / $moneda,0).'"><span>Reservar </span></button>
                                 </div>
                             </div>
                         </div>
@@ -406,7 +425,7 @@
                                 </div>
                                 '.$div_prices_private.'
                                 <div class="d-flex flex-column mt-4">
-                                    <button type="submit" class="btn_animation_2 btn btn-block btn-yamevi" data-tchange="'.$moneda.'" data-fllegada="'.$f_llegada.'" data-fsalida="'.$f_salida.'" data-type="privado" data-pasajeros="'.$pasajeros.'" data-rate-ow="'.round($rates_private_ow,2).'"  data-rateus-ow= "'.round($rates_private_ow / $moneda,0).'" data-rate-rt="'.round($rates_private_rt,2).'"  data-rateus-rt= "'.round($rates_private_rt / $moneda,0).'" id="init_reserva"><span>Reservar </span></button>
+                                    <button type="submit" class="btn_animation_2 btn btn-block btn-yamevi" data-tchange="'.$moneda.'"  data-operadora="'.$discount.'" data-fllegada="'.$f_llegada.'" data-fsalida="'.$f_salida.'" data-type="privado" data-pasajeros="'.$pasajeros.'" data-rate-ow="'.round($rates_private_ow,2).'"  data-rateus-ow= "'.round($rates_private_ow / $moneda,0).'" data-rate-rt="'.round($rates_private_rt,2).'"  data-rateus-rt= "'.round($rates_private_rt / $moneda,0).'" id="init_reserva"><span>Reservar </span></button>
                                 </div>
                             </div>
                         </div>
@@ -537,7 +556,7 @@
                                 </div>
                                 '.$div_prices_luxury.'
                                 <div class="d-flex flex-column mt-4">
-                                    <button type="submit" class="btn_animation_2 btn btn-block btn-yamevi" data-tchange="'.$moneda.'" data-fllegada="'.$f_llegada.'" data-fsalida="'.$f_salida.'" data-type="lujo" data-pasajeros="'.$pasajeros.'" id="init_reserva" data-rate-ow="'.round($rates_luxury_ow,2).'"  data-rateus-ow = "'.round($rates_luxury_ow / $moneda,0).'" data-rate-rt="'.round($rates_luxury_rt,2).'"  data-rateus-rt = "'.round($rates_luxury_rt / $moneda,0).'"><span>Reservar </span></button>
+                                    <button type="submit" class="btn_animation_2 btn btn-block btn-yamevi" data-tchange="'.$moneda.'"  data-operadora="'.$discount.'" data-fllegada="'.$f_llegada.'" data-fsalida="'.$f_salida.'" data-type="lujo" data-pasajeros="'.$pasajeros.'" id="init_reserva" data-rate-ow="'.round($rates_luxury_ow,2).'"  data-rateus-ow = "'.round($rates_luxury_ow / $moneda,0).'" data-rate-rt="'.round($rates_luxury_rt,2).'"  data-rateus-rt = "'.round($rates_luxury_rt / $moneda,0).'"><span>Reservar </span></button>
                                 </div>
                             </div>
                         </div>
@@ -608,14 +627,27 @@
             $pasajeros = $ins->{'pasajeros'};
             $traslados = $ins->{'traslado'};
             $f_llegada = $ins->{'date_star'};
+            $operadora = 0;
             $f_salida = 0;
             $rate_service_shared = '';
             $rate_service_private = '';
             $rate_service_luxury = '';
+            $discount = 0;
 
             if($ins->{'date_end'}){
                 $f_salida = $ins->{'date_end'};
-            }       
+            }      
+            if ($ins->{'operadora'}) {
+                $operadora = $ins->{'operadora'};
+                if ($operadora == 1) {
+                    $sql_operadora = "SELECT * FROM discounts WHERE type_discounts = 'OPERATOR AGENCIES DISCOUNT' and status = 1;";
+                    $result_operadora = mysqli_query($con, $sql_operadora);
+                    $ins_t = mysqli_fetch_object($result_operadora);
+                    if (isset($ins_t->amount_discounts)) {
+                        $discount = $ins_t->amount_discounts;
+                    }
+                }
+            } 
             //Obetnemos el tipo de moneda
             $moneda = $this->getDivisa('mxn', $con);
              
@@ -794,53 +826,53 @@
                     </div>
                 ';
             }else{
-            $rate_service_shared = '               
-                    <div class="row mb-3 mt-3 p-2 bg-white border rounded">
-                        <div class="col-md-3 mt-1 text-center content_card_result_center" >
-                            <div>
-                                <img class="img-fluid img-responsive rounded product-image" src="../assets/img/traslados/priv_com.png">
-                                <br><br>
-                                <h5 style="text-transform: uppercase;">SERVICIO <span>PRIVADO</span></h5>
-                            </div>
-                        </div>
-                        <div class="xol-xl-6 col-md-6 mt-1 mb-1 content_rules_card_result">
-                            <p><small>El servicio privado es por van, NO por pasajero. Servicio disponible 24/7</small></p>
-                            <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Precio por Vehículo</span></div>
-                            <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Incluye todos los impuestos y tasas aeroportuarias.</span></div>
-                            <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Seguro de viajero.</span></div>
-                            <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Recepción por uno de nuestros representantes.</span></div>
-                            <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> 24 Horas de servicio.</span></div>
-                            <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Servicio puerta a puerta en Cancun & Riviera Maya.</span></div>
-                            <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Vehículo privado – NO COMPARTIDO.</span></div>
-                            <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Vehículo espacioso para los pasajeros y el equipaje.</span></div>
-                            <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Un asiento de seguridad para niños incluido - Cuando lo solicite.</span></div>
-                        </div>
-                        <div class="col-xl-3 col-md-3 border-left mt-1 ">
-                            <div class="w-100 text-center">
-                                <div class=" text-center align-items-center">
-                                    <small class="name_hotel"><strong>'.$hotel.' / '.$interhotel.'</strong></small><br>
-                                    <small class="name_traslado">'.$name_traslado.'</small><br>
-                                    <small class="name_pasajeros">Pasajeros: '.$pasajeros.'</small><br>
-                                </div>
-                                <div class="row mt-2 content_prices_results">
-                                    <div class="col-xl-6 col-md-12 ">
-                                        <i class="fal fa-circle"></i>
-                                        <h5>SENCILLO</h5>
-                                        <h5 class="mt-1"><strong>---</strong></h5>
-                                    </div>
-                                    <div class="col-xl-6 col-md-12">
-                                        <i class="fal fa-circle"></i>
-                                        <h5>REDONDO</h5>
-                                        <h5 class="mt-1"><strong>---</strong></h5>
-                                    </div>
-                                </div>
-                                <div class="d-flex flex-column mt-4">
-                                    <p  class="text_not_available">NO DISPONIBLE</p>
+                $rate_service_shared = '               
+                        <div class="row mb-3 mt-3 p-2 bg-white border rounded">
+                            <div class="col-md-3 mt-1 text-center content_card_result_center" >
+                                <div>
+                                    <img class="img-fluid img-responsive rounded product-image" src="../assets/img/traslados/priv_com.png">
+                                    <br><br>
+                                    <h5 style="text-transform: uppercase;">SERVICIO <span>PRIVADO</span></h5>
                                 </div>
                             </div>
-                        </div>
-                    </div>              
-            ';
+                            <div class="xol-xl-6 col-md-6 mt-1 mb-1 content_rules_card_result">
+                                <p><small>El servicio privado es por van, NO por pasajero. Servicio disponible 24/7</small></p>
+                                <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Precio por Vehículo</span></div>
+                                <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Incluye todos los impuestos y tasas aeroportuarias.</span></div>
+                                <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Seguro de viajero.</span></div>
+                                <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Recepción por uno de nuestros representantes.</span></div>
+                                <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> 24 Horas de servicio.</span></div>
+                                <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Servicio puerta a puerta en Cancun & Riviera Maya.</span></div>
+                                <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Vehículo privado – NO COMPARTIDO.</span></div>
+                                <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Vehículo espacioso para los pasajeros y el equipaje.</span></div>
+                                <div class="mt-1 mb-1 spec-1"><i class="fas fa-check"></i> <span> Un asiento de seguridad para niños incluido - Cuando lo solicite.</span></div>
+                            </div>
+                            <div class="col-xl-3 col-md-3 border-left mt-1 ">
+                                <div class="w-100 text-center">
+                                    <div class=" text-center align-items-center">
+                                        <small class="name_hotel"><strong>'.$hotel.' / '.$interhotel.'</strong></small><br>
+                                        <small class="name_traslado">'.$name_traslado.'</small><br>
+                                        <small class="name_pasajeros">Pasajeros: '.$pasajeros.'</small><br>
+                                    </div>
+                                    <div class="row mt-2 content_prices_results">
+                                        <div class="col-xl-6 col-md-12 ">
+                                            <i class="fal fa-circle"></i>
+                                            <h5>SENCILLO</h5>
+                                            <h5 class="mt-1"><strong>---</strong></h5>
+                                        </div>
+                                        <div class="col-xl-6 col-md-12">
+                                            <i class="fal fa-circle"></i>
+                                            <h5>REDONDO</h5>
+                                            <h5 class="mt-1"><strong>---</strong></h5>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-column mt-4">
+                                        <p  class="text_not_available">NO DISPONIBLE</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>              
+                ';
             }
 
             //Privado
@@ -993,7 +1025,7 @@
                                 </div>
                                 '.$div_prices_private.'
                                 <div class="d-flex flex-column mt-4">
-                                    <button type="submit" class="btn_animation_2 btn btn-block btn-yamevi" data-tchange="'.$moneda.'" data-fllegada="'.$f_llegada.'" data-fsalida="'.$f_salida.'" data-type="privado" data-pasajeros="'.$pasajeros.'" data-rate-ow="'.round($new_rate_additional_charge_ow,2).'"  data-rateus-ow= "'.round($new_rate_additional_charge_ow / $moneda,0).'" data-rate-rt="'.round($new_rate_additional_charge_rt,2).'"  data-rateus-rt= "'.round($new_rate_additional_charge_rt / $moneda,0).'" id="init_reserva"><span>Reservar </span></button>
+                                    <button type="submit" class="btn_animation_2 btn btn-block btn-yamevi" data-tchange="'.$moneda.'" data-operadora="'.$discount.'" data-fllegada="'.$f_llegada.'" data-fsalida="'.$f_salida.'" data-type="privado" data-pasajeros="'.$pasajeros.'" data-rate-ow="'.round($new_rate_additional_charge_ow,2).'"  data-rateus-ow= "'.round($new_rate_additional_charge_ow / $moneda,0).'" data-rate-rt="'.round($new_rate_additional_charge_rt,2).'"  data-rateus-rt= "'.round($new_rate_additional_charge_rt / $moneda,0).'" id="init_reserva"><span>Reservar </span></button>
                                 </div>
                             </div>
                         </div>
@@ -1159,7 +1191,7 @@
                                 </div>
                                 '.$div_prices_luxury.'
                                 <div class="d-flex flex-column mt-4">
-                                    <button type="submit" class="btn_animation_2 btn btn-block btn-yamevi" data-tchange="'.$moneda.'" data-fllegada="'.$f_llegada.'" data-fsalida="'.$f_salida.'" data-type="lujo" data-pasajeros="'.$pasajeros.'" id="init_reserva" data-rate-ow="'.round($new_rate_additional_charge_ow,2).'"  data-rateus-ow = "'.round($new_rate_additional_charge_ow / $moneda,0).'" data-rate-rt="'.round($new_rate_additional_charge_rt,2).'"  data-rateus-rt = "'.round($new_rate_additional_charge_rt / $moneda,0).'"><span>Reservar </span></button>
+                                    <button type="submit" class="btn_animation_2 btn btn-block btn-yamevi" data-tchange="'.$moneda.'" data-operadora="'.$discount.'" data-fllegada="'.$f_llegada.'" data-fsalida="'.$f_salida.'" data-type="lujo" data-pasajeros="'.$pasajeros.'" id="init_reserva" data-rate-ow="'.round($new_rate_additional_charge_ow,2).'"  data-rateus-ow = "'.round($new_rate_additional_charge_ow / $moneda,0).'" data-rate-rt="'.round($new_rate_additional_charge_rt,2).'"  data-rateus-rt = "'.round($new_rate_additional_charge_rt / $moneda,0).'"><span>Reservar </span></button>
                                 </div>
                             </div>
                         </div>
@@ -1301,7 +1333,7 @@
         }
         function createLetterConfirm($id, $letter,$con, $ticket, $total){
             $newticket = 0;
-            if ($ticket != '' || $ticket ==1) {
+            if ($ticket != 0 || $ticket ==1) {
                 $newticket = $ticket;
             }
             $newtotal = 0;
@@ -1331,6 +1363,7 @@
             $datos_reserva_externa = '';
             $n_localizador = '';
             $n_asesor = '';
+            $n_of_the_agency="";
 
             $datos_reservacion = '';
             $n_traslado ='';
@@ -1357,6 +1390,7 @@
             $datos_pago = '';
             $n_mpego = '';
             $n_estado = '';
+            $n_time_service = "";
 
             $aviso_carta ='';
             $id_agencie='';
@@ -1365,7 +1399,12 @@
             if ($result_letter) {
                 $obj = mysqli_fetch_object($result_letter);
                 //Tipo de divisa
-
+                $ins ="";
+                if ($obj->of_the_agency) {
+                    $query_a = "SELECT name_agency FROM agencies WHERE id_agency = $obj->of_the_agency;";
+                    $res_age = mysqli_query($con, $query_a);
+                    $ins = mysqli_fetch_object($res_age);
+                }
                 $id_agencie = $obj->id_agency; 
                  //Logo agencias
                 $logo_agencie = $this->getIcon($id_agencie,$con);
@@ -1390,6 +1429,7 @@
                     $datos_reserva_externa = 'Datos de reserva externa';
                     $n_localizador = 'Localizador';
                     $n_asesor = 'Asesor';
+                    $n_of_the_agency ="De la Agencia";
         
                     $datos_reservacion = 'Detalles de Reservación';
                     $n_traslado ='Traslado';
@@ -1416,6 +1456,7 @@
                     $datos_pago = 'Detalles de Pago';
                     $n_mpego = 'Método de Pago';
                     $n_estado = 'Estado';
+                    $n_time_service = "Hora de Servicio Compartido";
                     $aviso_carta ='';   
                     $method_payment = "";   
                     $typePayment = 'PAGADO';
@@ -1485,6 +1526,7 @@
                     $datos_reserva_externa = 'External Data Reservation';
                     $n_localizador = 'Locator';
                     $n_asesor = 'Advisor';
+                    $n_of_the_agency ="Of the Agencie";
         
                     $datos_reservacion = 'Reservation Details';
                     $n_traslado ='Transfer';
@@ -1511,6 +1553,7 @@
                     $datos_pago = 'Payment Details';
                     $n_mpego = 'Payment method';
                     $n_estado = 'Status';
+                    $n_time_service = "Shared service time";
         
                     $aviso_carta ='';        
                     $typePayment = 'PAID';
@@ -1580,6 +1623,7 @@
                     $datos_reserva_externa = 'Dados de reserva externa';
                     $n_localizador = 'Localizador';
                     $n_asesor = 'Assessor';
+                    $n_of_the_agency = "Da agência";
         
                     $datos_reservacion = 'Dados de reserva';
                     $n_traslado ='Transferir';
@@ -1606,6 +1650,7 @@
                     $datos_pago = 'Detalhes do pagamento';
                     $n_mpego = 'Forma de pagamento';
                     $n_estado = 'A condição';
+                    $n_time_service = "Tempo de serviço partilhado";
         
                     $aviso_carta ='';      
                     $typePayment = 'PAGO';
@@ -1666,7 +1711,12 @@
                     $currency = 'USD';
                     $footer_letter = $this->getFooterLetter($letter_lang, $con);
                 }   
-
+                $new_cost_finally ="";
+                if ($obj->method_payment == 'card' || $obj->method_payment == 'paypal') {
+                    $new_cost_finally = $obj->total_cost_commision;
+                }else{
+                    $new_cost_finally = $obj->total_cost;
+                }
                 $template = '';
 
                 //Header
@@ -1706,7 +1756,7 @@
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td align="center">
-                                                                <img src="../assets/img/agencias/'.$logo_agencie.'" alt="" width="70%" height="80" style="display: block;" />
+                                                                <img src="../assets/img/agencias/'.$logo_agencie.'" alt="" width="60%" height="80" class="w-40" style="display: block;" />
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1721,7 +1771,8 @@
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td width="170" valign="top" >
+                                                <td width="170" style=" line-height: 0; text-align: center; 
+                                                vertical-align: middle;" valign="top" >
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td align="center">
@@ -1769,7 +1820,7 @@
                                                         <tr>
                                                             <td align="right">
                                                                 <h3 style="margin-block-end: 0.5em;">Total</h3>
-                                                                <p style="color: #E1423B; font-weight: bold;">$ '.$obj->total_cost_commision.' '.$new_type_currency.'</p>
+                                                                <p style="color: #E1423B; font-weight: bold;">$ '.$new_cost_finally.' '.$new_type_currency.'</p>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1784,7 +1835,7 @@
                                 </tr>
                 ';
                 //Apartado Reserva Externa
-                if ($obj->code_client) {
+                if ($obj->code_client != "" || $obj->name_advisor != "" || $obj->of_the_agency != $obj->id_agency) {
                     $template.= '    
                                 <tr>
                                     <td style="padding-left: 20px; padding-right: 20px;">
@@ -1802,30 +1853,66 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding-left: 20px; padding-right: 20px;">
+                                <td style="padding-left: 20px; padding-right: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:0px 5px 20px 5px;">
-                                            <tr>
-                                                <td style=" line-height: 0;" width="290">
+                                            <tr>';
+                    if ($obj->code_client) {
+                        $template.= ' 
+                                        
+                                                    <td width="290">
+                                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                            <tr>
+                                                                <td>
+                                                                    <h5 style="margin-block-end: 0.5em;">'.$n_localizador.'</h5>
+                                                                    <small>'.$obj->code_client.'</small>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                        ';
+                    }
+                    if ($obj->name_advisor) {
+                        $template.='
+                                                    <td  width="170">
+                                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                            <tr>
+                                                                <td>
+                                                                    <h5 style="margin-block-end: 0.5em;">'.$n_asesor.'</h5>
+                                                                    <small>'.$obj->name_advisor.'</small>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                        ';
+                    }else{
+                        $template.='
+                                                    <td  width="170">
+                                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                            <tr>
+                                                                <td>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                        ';
+                    }
+                    if ($obj->of_the_agency != "" && $obj->of_the_agency != $obj->id_agency) {
+                        
+                        $template.='
+                                                <td  width="170">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
-                                                                <h5 style="margin-block-end: 0.5em;">'.$n_localizador.'</h5>
-                                                                <small>'.$obj->code_client.'</small>
+                                                                <h5 style="margin-block-end: 0.5em;">'.$n_of_the_agency.'</h5>
+                                                                <small>'.$ins->name_agency.'</small>
                                                             </td>
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
-                                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                        <tr>
-                                                            <td>
-                                                                <h5 style="margin-block-end: 0.5em;">'.$n_asesor.'</h5>
-                                                                <small>'.$obj->name_advisor.'</small>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                                <td style=" line-height: 0; " width="170">
+                        ';
+                    }else{
+                        $template.='
+                                                <td  width="170">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -1833,11 +1920,16 @@
                                                         </tr>
                                                     </table>
                                                 </td>
+                        ';
+                    }
+                    
+                    $template.='
                                             </tr>
                                         </table>
                                     </td>
                                 </tr>
                     ';
+
                 }
 
                 //Detalles de la reservacion
@@ -1861,7 +1953,7 @@
                                     <td style="padding-left: 20px; padding-right: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:0px 5px 20px 5px;">
                                             <tr>
-                                                <td style=" line-height: 0;" width="290">
+                                                <td width="290">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -1871,7 +1963,7 @@
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="180">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -1881,7 +1973,7 @@
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="170">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -1903,11 +1995,11 @@
                                     <td style="padding-left: 20px; padding-right: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:0px 5px 20px 5px;">
                                             <tr>
-                                                <td style=" line-height: 0;" width="290">
+                                                <td  width="290">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
-                                                                <h5 style="padding-bottom: 2px;">'.$n_hotel.'</h5>
+                                                                <h5 style="margin-block-end: 0.5em;">'.$n_hotel.'</h5>
                                                                 <small>'.$obj->transfer_destiny.'</small>
                                                             </td>
                                                         </tr>
@@ -1916,17 +2008,17 @@
                     ';
                     if ($obj->type_transfer == 'SEN/AH' ) {
                         $template.='
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="180">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
-                                                                <h5 style="padding-bottom: 2px;">'.$n_date_entry.'</h5>
+                                                                <h5 style="margin-block-end: 0.5em;">'.$n_date_entry.'</h5>
                                                                 <small>'.$obj->date_arrival.' / '.$obj->time_arrival.' Hrs</small>
                                                             </td>
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="170">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -1938,17 +2030,17 @@
                     }
                     if ($obj->type_transfer == 'SEN/HA') {
                         $template.='
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="180">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
-                                                                <h5 style="padding-bottom: 2px;">'.$n_date_exit.'</h5>
+                                                                <h5 style="margin-block-end: 0.5em;">'.$n_date_exit.'</h5>
                                                                 <small>'.$obj->date_exit.' / '.$obj->time_exit.' Hrs</small>
                                                             </td>
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="170">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -1961,21 +2053,21 @@
                     
                     if ($obj->type_transfer == 'RED') {
                         $template.='
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="180">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
-                                                                <h5 style="padding-bottom: 2px;">'.$n_date_entry.'</h5>
+                                                                <h5 style="margin-block-end: 0.5em;">'.$n_date_entry.'</h5>
                                                                 <small>'.$obj->date_arrival.' / '.$obj->time_arrival.' Hrs</small>
                                                             </td>
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="170">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
-                                                                <h5 style="padding-bottom: 2px;">'.$n_date_exit.'</h5>
+                                                                <h5 style="margin-block-end: 0.5em;">'.$n_date_exit.'</h5>
                                                                 <small>'.$obj->date_exit.' / '.$obj->time_exit.' Hrs</small>
                                                             </td>
                                                         </tr>
@@ -1991,56 +2083,18 @@
                     ';
 
                 }
+                if($obj->type_transfer == 'SEN/HH' ){
                     $template.='
                                 <tr>
                                     <td style="padding-left: 20px; padding-right: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:0px 5px 20px 5px;">
                                             <tr>
-                    ';
-                if($obj->type_transfer == 'SEN/HH' ){
-                    $template.='
                                                 <td width="290">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
                                                                 <h5 style="margin-block-end: 0.5em;">'.$n_hotel_ida.'</h5>
                                                                 <small>'.$obj->transfer_destiny.'</small>
-                                                                <br>
-                                                                <small>></small>
-                                                                <small>'.$obj->destiny_interhotel.'</small>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                                <td  width="170">
-                                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                        <tr>
-                                                            <td>
-                                                                <h5 style="margin-block-end: 0.5em;">'.$n_llegada.'</h5>
-                                                                <small>'.$obj->date_arrival.'<br> '.$obj->time_arrival.' Hrs</small>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                                                <td style=" line-height: 0; " width="170">
-                                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                        <tr>
-                                                            <td>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
-                                                </td>
-                    ';
-                }
-                if ($obj->type_transfer == 'REDHH') {
-                        $template.='
-                                                <td width="290">
-                                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                        <tr>
-                                                            <td>
-                                                                <h5 style="margin-block-end: 0.5em;">'.$n_hotel_ida.'</h5>
-                                                                <small>'.$obj->transfer_destiny.'</small>
-                                                                <br>
                                                                 <small>></small>
                                                                 <small>'.$obj->destiny_interhotel.'</small>
                                                             </td>
@@ -2052,50 +2106,112 @@
                                                         <tr>
                                                             <td>
                                                                 <h5 style="margin-block-end: 0.5em;">'.$n_llegada.'</h5>
-                                                                <small>'.$obj->date_arrival.'<br> '.$obj->time_arrival.' Hrs</small>
+                                                                <small>'.$obj->date_arrival.' / '.$obj->time_arrival.' Hrs</small>
                                                             </td>
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td width="300">
+                                                <td  width="150">
+                                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                        <tr>
+                                                            <td>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                    ';
+                }
+                if ($obj->type_transfer == 'REDHH') {
+                        $template.='
+                                <tr>
+                                    <td style="padding-left: 20px; padding-right: 20px;">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:0px 5px 20px 5px;">
+                                            <tr>
+                                                <td width="290">
+                                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                        <tr>
+                                                            <td>
+                                                                <h5 style="margin-block-end: 0.5em;">'.$n_hotel_ida.'</h5>
+                                                                <small>'.$obj->transfer_destiny.'</small>
+                                                                <small>></small>
+                                                                <small>'.$obj->destiny_interhotel.'</small>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                                <td  width="200">
+                                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                        <tr>
+                                                            <td>
+                                                                <h5 style="margin-block-end: 0.5em;">'.$n_llegada.'</h5>
+                                                                <small>'.$obj->date_arrival.' / '.$obj->time_arrival.' Hrs</small>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                                <td  width="150">
+                                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                        <tr>
+                                                            <td>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 20px; padding-right: 20px;">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:0px 5px 20px 5px;">
+                                            <tr>
+                                                <td width="290">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
                                                                 <h5 style="margin-block-end: 0.5em;">'.$n_hotel_vuelta.'</h5>
                                                                 <small>'.$obj->destiny_interhotel.'</small>
-                                                                <br>
                                                                 <small>></small>
                                                                 <small>'.$obj->transfer_destiny.'</small>
                                                             </td>
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td  width="180">
+                                                <td  width="200">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
                                                                 <h5 style="margin-block-end: 0.5em;">'.$n_salida.'</h5>
-                                                                <small>'.$obj->date_exit.' <br> '.$obj->time_exit.' Hrs</small>
+                                                                <small>'.$obj->date_exit.' / '.$obj->time_exit.' Hrs</small>
                                                             </td>
                                                         </tr>
                                                     </table>
                                                 </td>
-                        ';
-                }
-                    $template.='
+                                                <td  width="150">
+                                                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                        <tr>
+                                                            <td>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
                                             </tr>
                                         </table>
                                     </td>
                                 </tr>
-                    ';
-                
+                        ';
+                }
                 if ($obj->type_transfer == 'SEN/AH' || $obj->type_transfer == 'RED') {
                     $template.='
                                 <tr>
                                     <td style="padding-left: 20px; padding-right: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:0px 5px 20px 5px;">
                                             <tr>
-                                                <td style=" line-height: 0;" width="290">
+                                                <td  width="290">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2105,7 +2221,7 @@
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="180">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2115,7 +2231,7 @@
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="170">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2138,7 +2254,7 @@
                                     <td style="padding-left: 20px; padding-right: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:0px 5px 20px 5px;">
                                             <tr>
-                                                <td style=" line-height: 0;" width="290">
+                                                <td width="290">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2148,7 +2264,7 @@
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="180">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2158,7 +2274,7 @@
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="170">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2174,7 +2290,28 @@
                                 </tr>
                     ';
                 }
-
+                if($obj->type_service == 'compartido'){
+                    $template.='
+                    <tr>
+                        <td style="padding-left: 20px; padding-right: 20px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:0px 5px 20px 5px;">
+                                <tr>
+                                    <td width="290">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td>
+                                                    <h5 style="margin-block-end: 0.5em;">'.$n_time_service.'</h5>
+                                                    <small>'.$obj->time_service.'</small>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                     ';
+                }
                 $template.= '
                                 <tr>
                                     <td style="padding-left: 20px; padding-right: 20px;">
@@ -2195,7 +2332,7 @@
                                     <td style="padding-left: 20px; padding-right: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:0px 5px 20px 5px;">
                                             <tr>
-                                                <td style=" line-height: 0;" width="250">
+                                                <td  width="250">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2205,7 +2342,7 @@
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="170">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2215,7 +2352,7 @@
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="170">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2225,7 +2362,7 @@
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="170">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2243,7 +2380,7 @@
                                     <td style="padding-left: 20px; padding-right: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:0px 5px 20px 5px;">
                                             <tr>
-                                                <td style=" line-height: 0;" width="700">
+                                                <td  width="700">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2276,7 +2413,7 @@
                                     <td style="padding-left: 20px; padding-right: 20px; padding-bottom: 30px; ">
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:0px 5px 20px 5px; " class="mb-4">
                                             <tr>
-                                                <td style=" line-height: 0;" width="290">
+                                                <td  width="290">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2286,7 +2423,7 @@
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="250">
+                                                <td  width="250">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2296,7 +2433,7 @@
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td style=" line-height: 0; " width="170">
+                                                <td  width="170">
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td>
@@ -2364,8 +2501,8 @@
                         </body>
                     </html>
                 ';
-                if ($newticket == 'true') {
-                    return $template;
+                if ($newticket == 1) {
+                    return $template.$newticket;
                     exit;
                 }
                 
@@ -2402,11 +2539,11 @@
                         //mail('reservaciones@yamevitravel.com', $subjectClient, $template, $headerSales);
                     }
                 }else{
-                    //mail($obj->email_client, $subjectClient, $template, $headerClient);
+                    // mail($obj->email_client, $subjectClient, $template, $headerClient);
                     
                     //mail('reservaciones@yamevitravel.com', $subjectClient, $template,$headerSales);
 
-                    return json_encode(array('invoice' => $obj->code_invoice, 'staus' => 1));
+                    return json_encode(array('invoice' => $obj->code_invoice, 'status' => 1));
                 }
             }
             //return $template;
@@ -2453,7 +2590,7 @@
         function callToLetter($code_invoice, $letter_lang){
             include('../config/conexion.php');
             $id_reservation = $this->getIdReservation($code_invoice);
-            $reservation = $this->createLetterConfirm($id_reservation,$letter_lang,$con,$ticket ="", $total="");
+            $reservation = $this->createLetterConfirm($id_reservation,$letter_lang,$con,$ticket =0, $total="");
             return $reservation;
         }
         private function getIdReservation($invoice){
@@ -2479,7 +2616,7 @@
             if ($result) {
                 $obj = mysqli_fetch_object($result);
                 $id_reservation = $obj->id_reservation;
-                $ticket = "true";
+                $ticket = 1;
                 return $this->createLetterConfirm($obj->id_reservation, $obj->type_language, $con, $ticket,$newtotal);
                 exit;
             }

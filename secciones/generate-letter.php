@@ -3,6 +3,10 @@
 require_once '../config/conexion.php';
 session_start();
 
+if ($_SESSION['yt_id_agency']) {
+}else{
+    header('location: ../helpers/logout_a.php');
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,7 +35,6 @@ session_start();
                     include('../model/traslados.php');
                     $reservacion = new Transfer;    
                     if (isset($_GET['letter']) && $_GET['letter'] != NULL) {
-                        echo $_GET['total'];
                         echo $reservacion->getLetterHtml($_GET['letter'], $_GET['total']);
                     }
                ?> 
@@ -42,4 +45,5 @@ session_start();
 </body>
     <?php include('include/footer_agencies.php')?>
     <?php include('include/scrips_agencies.php')?>
+    <script src="../assets/js/reservations.js"></script>
 </html>
