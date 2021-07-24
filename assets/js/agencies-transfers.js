@@ -18,20 +18,6 @@ $(function(){
     loadTimeReservation();
 
 
-        function loadTimeReservation(){
-            var dt = new Date();
-            var time = dt.getHours();
-            if (time < 7 || time >= 20){
-                $('#content_search').hide();
-                $('#content_bloquee').show();
-                $('.reserva_disabled').text('Lo sentimos, no se puede realizar reservas antes de las 8:00 AM y despues de las 8:00 PM.');
-                return false;   
-            }else{
-                $('#content_search').show();
-                $('#content_bloquee').hide();
-
-            }
-        }
         $(document).on('click', '#close-anuncio', function(){
             $('#anuncio').hide('slow');
             $('#btn-anuncio').show('slow');
@@ -116,6 +102,46 @@ $(function(){
             }
         });
         
+        function loadTimeReservation(){
+            var dt = new Date();
+            var time = dt.getHours();
+            if (time < 8 || time >= 20){
+                $('#content_search').show();
+                var $datepicker2 = $( "#datepicker_end" );
+                let inp_todaysale = $('#inp_todaysale').val();
+                let todaysale = 0;
+                if (inp_todaysale == 1 || inp_todaysale == 0) {
+                    todaysale = $('#inp_todaysale').val();
+                }else{
+                    todaysale = 0;
+                }
+                var minDateArg = todaysale == 1 ? 0 : '+2d';
+                $('#datepicker_star').datepicker( {
+                    language: 'es',
+                    minDate: minDateArg,
+                    onSelect: function(fecha) {
+                        $datepicker2.datepicker({
+                            language: 'es',       
+                            minDate: new Date(),
+        
+                        });
+                        $datepicker2.datepicker("option", "disabled", false);
+                        $datepicker2.datepicker('setDate', null);
+                        $datepicker2.datepicker("option", "minDate", fecha); 
+                    }
+                });   
+            }else{
+                $('#content_search').show();
+
+            }
+        }
+        $( "#datepicker_end"  ).focus(function() {
+            let date = $('#datepicker_star').val();
+            if (date == '') {
+                $('#datepicker_star').addClass(' is-invalid');
+                $('#datepicker_star').focus();
+            }
+        });
         //Tipo de traslado
         $(document).on('change', '#inp_traslado', function(){
             $('#datepicker_star').val('');
@@ -453,6 +479,7 @@ $(function(){
             $('.content_descuento_operadora').hide();
             $('#content_descuento_electronic').hide();
             $('.btn_load').hide();
+            $('.content_mprecio').hide();
             $('#finish_reserv').show();
             e.preventDefault();
             let hotel = $('#name_hotel').text();
@@ -488,7 +515,7 @@ $(function(){
                     new_type_traslado = "Lujo";
                     break;
             }
-            if (type_traslado == 'compartido') {
+            if (type_traslado == 'compartido' && (a_traslado == "RED" || a_traslado == 'SEN/AH')) {
                 $('#content_time_service').show();
                 
             }
@@ -735,7 +762,7 @@ $(function(){
             if (id_operadora == 1) {
                 $('.content_descuento_operadora').show();
             }
-            if (value == 'transfer' || value == 'airport') {
+            if (value == 'transfer' || value == 'airport' ) {
                 $('#_PAYMENT').val('transfer');
                 mx = $('#info_import').data('ratemx'); //getter
                 us = $('#info_import').data('rateus'); //getter
@@ -777,6 +804,50 @@ $(function(){
                     $('#descuento_resumen_operadora').val('$ '+descuento_ope);
                 }
             }
+            if (value == 'a_pa' || value == 'a_transfer') {
+                $('.content_mprecio').show('slow');
+                $('#_PAYMENT').val('transfer');
+                mx = $('#info_import').data('ratemx'); //getter
+                us = $('#info_import').data('rateus'); //getter
+                $('#_TOTAL_MXN').val(mx);
+                $('#_TOTAL_USD').val(us);
+                if (operator == 1) {
+                    mx_ope = $('#info_import').data('ratemx_ope'); //getter
+                    us_ope = $('#info_import').data('rateus_ope'); //getter    
+                    $('#_TOTAL_MXN').val(mx_ope);
+                    $('#_TOTAL_USD').val(us_ope);
+                }
+                $('#_CHARGE_SERVICE').val('0.00');
+                $('#_AMOUNT_TOTAL').val('0.00');
+                if (type_change == 'mxn') {
+                    descuento = $('#info_import').data('discountmx');
+                    $('#info_import').text(mx);
+                    $('#_AMOUNT_TOTAL').val(mx);
+                    if (operator == 1) {
+                        descuento_ope = $('#info_import').data('discountmxope');
+                        $('#info_import').text(mx_ope);
+                        $('#_AMOUNT_TOTAL').val(mx_ope);
+                    }
+                }
+                if (type_change == 'usd') {
+                    descuento = $('#info_import').data('discountus');
+                    $('#info_import').text(us);
+                    $('#_AMOUNT_TOTAL').val(us);
+                    if (operator == 1) {
+                        descuento_ope = $('#info_import').data('discountusope');
+                        $('#info_import').text(us_ope);
+                        $('#_AMOUNT_TOTAL').val(us_ope);
+                    }
+                }
+                $('.content_cservicio').hide('slow');
+                $('.content_descuento').show('slow');
+
+                $('#descuento_resumen').val('$ '+descuento);
+                if (operator == 1) {
+                    $('#descuento_resumen_operadora').val('$ '+descuento_ope);
+                }
+            }
+            
             if (value == 'card' || value == "paypal") {
                 $('#_PAYMENT').val('card');
                 mx = $('#info_import').data('ratemx_c'); //getter
@@ -814,6 +885,45 @@ $(function(){
                     $('#descuento_resumen_operadora').val('$ '+descuento_ope);
                 }
             }
+            if (value == 'a_card' || value == "a_paypal") {
+                $('.content_mprecio').show('slow');
+                $('#_PAYMENT').val('card');
+                mx = $('#info_import').data('ratemx_c'); //getter
+                us = $('#info_import').data('rateus_c'); //getter
+                $('#_TOTAL_MXN').val(mx);
+                $('#_TOTAL_USD').val(us);
+                if (operator == 1) {
+                    mx_ope = $('#info_import').data('ratemx_ope_tp'); //getter
+                    us_ope = $('#info_import').data('rateus_ope_tp'); //getter    
+                    $('#_TOTAL_MXN').val(mx_ope);
+                    $('#_TOTAL_USD').val(us_ope);
+                }
+                if (type_change == 'mxn') {
+                    $('#info_import').text(mx);
+                    $('#_AMOUNT_TOTAL').val(mx);
+                    if (operator == 1) {
+                        descuento_ope = $('#info_import').data('discountmxope_tp');
+                        $('#info_import').text(mx_ope);
+                        $('#_AMOUNT_TOTAL').val(mx_ope);
+                    }
+                }
+                if (type_change == 'usd') {
+                    $('#info_import').text(us);
+                    $('#_AMOUNT_TOTAL').val(us);
+                    if (operator == 1) {
+                        descuento_ope = $('#info_import').data('discountusope_tp');
+                        $('#info_import').text(us_ope);
+                        $('#_AMOUNT_TOTAL').val(us_ope);
+                    }
+                }
+                $('#descuento_resumen').val('');
+                $('.content_cservicio').hide('slow');
+                $('.content_descuento').hide('slow');
+                if (operator == 1) {
+                    $('#descuento_resumen_operadora').val('$ '+descuento_ope);
+                }
+            }
+            $('#_PAYMENT').val(value);
         });
 
         //Select change type
@@ -821,6 +931,7 @@ $(function(){
             $("#check_electronic_purse").prop('checked', false);
             $('#content_descuento_electronic').hide('slow');
             $('#cservicio_resumen').val('0.00');
+            $('#_CHARGE_SERVICE').val('');
             let value = "";
             let mpago = "";
             let descuento = "";
@@ -832,6 +943,7 @@ $(function(){
             var operator = $('#info_import').data('operator'); //getter
             value = $(this).val();
             mpago = $('#mpago_resumen').val();
+
             if (value == 'mxn') {
                 $('#_TYPE_CURRENCY').val('MXN');
                 if (mpago == 'transfer' || mpago == 'airport') {
@@ -890,7 +1002,7 @@ $(function(){
             }
         });
         
-
+        //Checkbox de Monedero Electrónico
         $(document).on('click', '#check_electronic_purse', function(){
             var seleccion_ep = $("#check_electronic_purse")[0].checked;
             var comision = 0;
@@ -902,7 +1014,7 @@ $(function(){
                 let currency = $('#select_type_change').val();
                 let before_electronic_purse = $('#inp_electronic').val();
                 let change_type = $('#inp_change_type').val();
-                let discount_electronic_purse = "";
+                var discount_electronic_purse = 0;
                 let resta = total;
                 if (currency == 'usd') {
                     discount_electronic_purse = Math.round(parseFloat(before_electronic_purse) / parseFloat(change_type));
@@ -910,7 +1022,11 @@ $(function(){
                     discount_electronic_purse = before_electronic_purse;
                 }
                 if (discount_electronic_purse != 0) {
-                    resta = Math.round(parseFloat(total) - parseFloat(discount_electronic_purse));
+                    var electronic_pur_com = Math.round(discount_electronic_purse);
+                    resta = 0;
+                    if ( electronic_pur_com < total) {
+                        resta = Math.round(parseFloat(total) - parseFloat(discount_electronic_purse));
+                    }   
                 }
                 $('#content_descuento_electronic').show('slow');
                 let curr = "MXN";
@@ -954,13 +1070,22 @@ $(function(){
             }
 
         });
-        
+        $(document).on('click', '#check_ceros', function(){
+            var seleccion_ceros = $("#check_ceros")[0].checked;
+            if (seleccion_ceros == true) {
+                $('#_VIEW_PRICE_TOTAL').val('1');
+            }else{
+                $('#_VIEW_PRICE_TOTAL').val('0');
+            }
+        });
+
         $('#cservicio_resumen').on('keyup', function(e){
             if ($(this).val() == null || $(this).val() == "") {
                 $(this).val('0.00');
                 $('#_CHARGE_SERVICE').val('0.00');
             }
             let id_operadora = $('#inp_operadora').val();
+            let change_type = $('#inp_change_type').val();
             let rate_mx =$('#info_import').data('ratemx_c');
             let rate_us =$('#info_import').data('rateus_c');
             if (id_operadora == 1) {
@@ -981,33 +1106,114 @@ $(function(){
             var seleccion_ep = $("#check_electronic_purse")[0].checked;
             let discount_electronic_purse = 0;
             if (seleccion_ep) {
-                discount_electronic_purse = $('#inp_electronic').val();
+                if (sale.currency == 'usd') {
+                    val_elect = $('#inp_electronic').val();
+                    discount_electronic_purse = Math.round(parseFloat(val_elect) / parseFloat(change_type));
+                }else{
+                    discount_electronic_purse = $('#inp_electronic').val();
+                }
             }
             var subtotal = sale.currency == 'usd' ? sale.subtotalus : sale.subtotalmx; 
             $('#_CHARGE_SERVICE').val(sale.commission);  
             let type_payment = $('#_PAYMENT').val();
             let subtotal_card_paypal = "";
-            if (discount_electronic_purse != 0) {
-                sale.total = Math.round((parseFloat(subtotal) + parseFloat(sale.commission)) - parseFloat(discount_electronic_purse));
+            let price_temporal = 0;
+            // Metodos de pago con transferencia, pago al abordar, etc. asignando precios
+            if (discount_electronic_purse != 0 && seleccion_ep) {
+                price_temporal = Math.round((parseFloat(subtotal) + parseFloat(sale.commission)) - parseFloat(discount_electronic_purse));
+                sale.total = Math.round(parseFloat(subtotal) + parseFloat(sale.commission));
+                $('#info_import').text(price_temporal);
             }else{
                 sale.total = Math.round(parseFloat(subtotal) + parseFloat(sale.commission));
+                $('#info_import').text(sale.total);
             }
+            // Metodos de pago con tarjeta y paypal asignando precios
             if(type_payment == 'card' || type_payment == 'paypal'){
-                if (discount_electronic_purse != 0) {
+                if (discount_electronic_purse != 0 && seleccion_ep) {
                     subtotal_card_paypal = Math.round(parseFloat(subtotal) * 0.05);
-                    sale.total = Math.round((((parseFloat(subtotal) - subtotal_card_paypal)+ parseFloat(sale.commission)) / .95) - parseFloat(discount_electronic_purse));
+                    price_temporal = Math.round((((parseFloat(subtotal) - subtotal_card_paypal)+ parseFloat(sale.commission)) / .95) - parseFloat(discount_electronic_purse));
+                    sale.total = Math.round(((parseFloat(subtotal) - subtotal_card_paypal)+ parseFloat(sale.commission)) / .95);
+                    $('#info_import').text(price_temporal);
                 }else{
                     subtotal_card_paypal = Math.round(parseFloat(subtotal) * 0.05);
                     sale.total = Math.round(((parseFloat(subtotal) - subtotal_card_paypal)+ parseFloat(sale.commission)) / .95);
+                    $('#info_import').text(sale.total);
                 }
             }   
-            $('#info_import').text(sale.total);
             $('#_AMOUNT_TOTAL').val(sale.total);
             if( isNaN(parseFloat(sale.commission)) == true ) {
                 $('#info_import').text(parseFloat(subtotal));
             }
         });
-        
+        $('#mprecio_resumen').on('keyup', function(e){
+            if ($(this).val() == null || $(this).val() == "") {
+                $(this).val('0.00');
+                $('#_CHARGE_SERVICE').val('0.00');
+            }
+            let method_payment = $('#mpago_resumen').val();
+            let id_operadora = $('#inp_operadora').val();
+            let change_type = $('#inp_change_type').val();
+            let rate_mx = "";
+            let rate_us = "";
+            if (method_payment == 'card' || method_payment == 'paypal' || method_payment == 'a_card' || method_payment == 'a_paypal') {
+                rate_mx =$('#info_import').data('ratemx_c');
+                rate_us =$('#info_import').data('rateus_c');
+            }else{
+                rate_mx =$('#info_import').data('ratemx');
+                rate_us =$('#info_import').data('rateus');
+            }
+            if (id_operadora == 1) {
+                rate_mx =$('#info_import').data('ratemx_ope_tp');
+                rate_us =$('#info_import').data('rateus_ope_tp');
+            }
+            var sale = {
+                'subtotalmx' : rate_mx,
+                'subtotalus' : rate_us,
+                'commission' : $(this).val(),
+                'currency' : $('#select_type_change').val()
+            };
+            var seleccion_ep = $("#check_electronic_purse")[0].checked;
+            let discount_electronic_purse = 0;
+            if (seleccion_ep) {
+                if (sale.currency == 'usd') {
+                    val_elect = $('#inp_electronic').val();
+                    discount_electronic_purse = Math.round(parseFloat(val_elect) / parseFloat(change_type));
+                }else{
+                    discount_electronic_purse = $('#inp_electronic').val();
+                }
+            }
+            var subtotal = sale.currency == 'usd' ? sale.subtotalus : sale.subtotalmx; 
+            $('#_CHARGE_SERVICE').val(sale.commission);  
+            let type_payment = $('#_PAYMENT').val();
+            let subtotal_card_paypal = "";
+            let price_temporal = 0;
+            // Metodos de pago con transferencia, pago al abordar, etc. asignando precios
+            if (discount_electronic_purse != 0 && seleccion_ep) {
+                price_temporal = Math.round((parseFloat(subtotal) + parseFloat(sale.commission)) - parseFloat(discount_electronic_purse));
+                sale.total = Math.round(parseFloat(subtotal) + parseFloat(sale.commission));
+                $('#info_import').text(price_temporal);
+            }else{
+                sale.total = Math.round(parseFloat(subtotal) + parseFloat(sale.commission));
+                $('#info_import').text(sale.total);
+            }
+            // Metodos de pago con tarjeta y paypal asignando precios
+            if(type_payment == 'card' || type_payment == 'paypal' || type_payment == 'a_card' || type_payment == 'a_paypal'){
+                if (discount_electronic_purse != 0 && seleccion_ep) {
+                    subtotal_card_paypal = Math.round(parseFloat(subtotal) * 0.05);
+                    price_temporal = Math.round((((parseFloat(subtotal) - subtotal_card_paypal)+ parseFloat(sale.commission)) / .95) - parseFloat(discount_electronic_purse));
+                    sale.total = Math.round(((parseFloat(subtotal) - subtotal_card_paypal)+ parseFloat(sale.commission)) / .95);
+                    $('#info_import').text(price_temporal);
+                }else{
+                    subtotal_card_paypal = Math.round(parseFloat(subtotal) * 0.05);
+                    sale.total = Math.round(((parseFloat(subtotal) - subtotal_card_paypal)+ parseFloat(sale.commission)) / .95);
+                    $('#info_import').text(sale.total);
+                }
+            }   
+            $('#_AMOUNT_TOTAL').val(sale.total);
+            if( isNaN(parseFloat(sale.commission)) == true ) {
+                $('#info_import').text(parseFloat(subtotal));
+            }
+        });
         //Select payment
         $(document).on('change', '#idioma_resumen', function(){
 
@@ -1167,10 +1373,12 @@ $(function(){
                 $('.invalid-feedback').removeClass('d-none');
                 return false;
             }
+            //CHECHBOX DE MONEDERO ELECTRONICO
+            var change_type = $('#inp_change_type').val();
             var seleccion_ep = $("#check_electronic_purse")[0].checked;
-            let discount_electronic_purse = 0;
+            var discount_electronic_purse = 0;
             if (seleccion_ep) {
-                discount_electronic_purse = $('#inp_electronic').val();
+                discount_electronic_purse = parseFloat($('#inp_electronic').val());
             }
             var seleccion_ceros = $("#check_ceros")[0].checked;
             let ceros = 0;
@@ -1213,7 +1421,9 @@ $(function(){
                 
             }
             var charge_service = 0;
-            charge_service = $('#_CHARGE_SERVICE').val();
+            if ($('#_CHARGE_SERVICE').val()) {                
+                charge_service = $('#_CHARGE_SERVICE').val();
+            }
             if ($('#_AMOUNT_TOTAL').val()) {
                 amount_total = $('#_AMOUNT_TOTAL').val();
             }
@@ -1256,10 +1466,12 @@ $(function(){
                 'service_charge': charge_service,
                 "amount_total":amount_total,
                 'discount_electronic_purse': discount_electronic_purse,
+                'change_type': change_type,
                 "letter_lang": letter_language,
                 'ceros': ceros,
                 "status": status_reserv
             };
+            
             $.ajax({
                 data: postDatas,
                 url: '../helpers/traslados.php',
@@ -1281,7 +1493,7 @@ $(function(){
                     console.log(data);
                     const res = JSON.parse(data);
                     if (res.status != 0) {
-                        if (method_payment == 'transfer' || method_payment == 'airport') {
+                        if (method_payment == 'transfer' || method_payment == 'airport' || method_payment == 'a_pa' || method_payment == 'a_transfer') {
                             $('#myModal').modal('show');
                             $('#msj_success').text('Su reservación ha sido creada satisfactoriamente, en breve recibirá su carta de confirmación.');  
                         }
@@ -1311,7 +1523,7 @@ $(function(){
                         break;
                     }
 
-                    if (method_payment == 'paypal') {
+                    if (method_payment == 'paypal' || method_payment == 'a_paypal') {
 
                         $('#p_itemname').val(iptName + ' | ' + hotel);
                         $('#p_amount').val(amount_total);
@@ -1327,20 +1539,22 @@ $(function(){
                         }
 
                     }
-                    if (method_payment == 'card') {
+                    if (method_payment == 'card' || method_payment == 'a_card') {
+                        $('#myModal').modal('show');
                         $('#_INVOICE').val(res.invoice);
                         $('#_NAME_CLIENT').val(postDatas.name_client);
                         $('#_LAST_NAME').val(postDatas.lastname_client);
                         $('#_CLIENT_EMAIL').val(postDatas.email_client);
                         $('#_CLIENT_PHONE').val(postDatas.phone_client);
-                        $('#_LETTER_LANGUAGE').val(postDatas.letter_language);
+                        $('#_LETTER_LANGUAGE').val(postDatas.letter_lang);
                         $('#_AMOUNT_TOTAL').val(postDatas.amount_total);
+                        $('#_VIEW_PRICE_TOTAL').val(postDatas.ceros);
 
                         $('#inps_store').attr('action','/es/secciones/checkout.php');
                             $('#myModal').modal('show');
                             $('#btn_succes_r').hide();
-                            $('#msj_success').text('Su reservación ha sido creada satisfactoriamente, en breve sera redireccionado.');  
-                            setTimeout(function(){ $('#inps_store').submit(); }, 1000);
+                            $('#msj_success').text('Su reservación ha sido creada satisfactoriamente, en breve sera redireccionado, por favor espere.');  
+                            setTimeout(function(){ $('#inps_store').submit(); }, 500);
                             
                     }
                 }

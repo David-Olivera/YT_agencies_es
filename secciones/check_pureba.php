@@ -12,6 +12,8 @@ require_once('../model/fPaypal.php');
 if(isset($_GET['token']) && isset($_GET['invoice'])) { 
 
 	$access_token = $_GET['token'];
+    $code_invoice = $_GET['invoice'];
+	$viewCeros = $_GET['viewCeros'];
 	$paypalMode = 'live'; //sandbox - live
 	$payerId = $_GET['payerId'];
 	$paymentID = $_GET['paymentID'];
@@ -50,30 +52,37 @@ if(isset($_GET['token']) && isset($_GET['invoice'])) {
 
 	require_once('../model/traslados.php');
 	$booking = new Transfer();
-	
-	$setStatus = $booking->changeStateSale($paymentDetails[0], strtoupper($paymentDetails[5]));
+
+	$setStatus = $booking->changeStateSale($code_invoice, strtoupper($paymentDetails[5]));
+
+
 	$messageExecute = array('title' => 'Lo sentimos!',
 							'message' => 'Ocurrio un problema al procesar su información de pago, contacte a su entidad bancaria o intente nuevamente más tarde.',
-							'link' => '/es/secciones/',
+							'link' => '/agencias/app/',
 							'class' => 'errorPayment',
 							'icon' => 'fa-times-circle');
 	
 
 	//Message for Pendings transactions
 	if($payment['transactions'][0]['related_resources'][0]['sale']['state'] == 'pending') {
+			
 		$messageExecute['title'] = 'Gracias por elegir Yamevi Travel';
 		$messageExecute['message'] = 'Su pago se encuentra en proceso, tan pronto como sea completado deberá recibir la información para tomar su servicio.';
 		$messageExecute['link'] = '/';
 	}
+
 	//Message and letter for Completed Transactions
 	if($payment['transactions'][0]['related_resources'][0]['sale']['state'] == 'completed') {          
-	    $sale = json_decode($booking->callToLetter($paymentDetails[0], $_GET['letterlang']));
+	    $code_inv = $paymentDetails[0];
+		$letter_lang = $_GET['letterlang'];
+	    $sale = json_decode($booking->callToLetter($code_inv,$letter_lang,$viewCeros));
 	    //print_r($sale);
-		//Redirect page
-		header('Location: reservacion-completada.php');
-	}
-	header('Refresh:5; url='.$messageExecute['link'].'');
 
+		//Redirect page
+        header('Location:/es/secciones/reservacion-completada.php');
+	}
+
+	header('Refresh:5; url='.$messageExecute['link'].'');
 
 } else { ?>
     <!DOCTYPE html>
@@ -101,6 +110,7 @@ if(isset($_GET['token']) && isset($_GET['invoice'])) {
 			$payerEmail = $_REQUEST['_CLIENT_EMAIL'];
 			$payerPhone = $_REQUEST['_CLIENT_PHONE'];
 			$letterlang = $_REQUEST['_LETTER_LANGUAGE'];
+			$viewCeros = $_REQUEST['_VIEW_PRICE_TOTAL'];
 
 			$name_client = trim($_REQUEST['_NAME_CLIENT'], ' ');
             $last_name = trim($_REQUEST['_LAST_NAME'], ' ');
@@ -125,8 +135,8 @@ if(isset($_GET['token']) && isset($_GET['invoice'])) {
 			$clientId = 'AfsFswX4jdDHCZrHls-Ug_fCI6XvVEAGbmdbjpc-hSlqYXMJCzmCS4Z7igr5MHTw9qgaeL1o8-oTZeMw';
 			$secret = 'EEvewPFCdc1Rx00NF_y9OeYrpfK_457orwVZjLjWCg5rKSiL7kLTRKqKQ4YAcSj-ocZyEP6OCtzV2ilV';
 			//$experience_profile_id = 'XP-2UWL-YYMH-6TEW-4WFD';
-			$returnUrl = 'http://www.yamevitravel.com/es/secciones/reservacion-completada.php';
-			$cancelUrl = 'http://www.yamevitravel.com/es/secciones/transfers.php';
+			$returnUrl = 'https://www.yamevitravel.com/es/secciones/reservacion-completada.php';
+			$cancelUrl = 'https://www.yamevitravel.com/es/secciones/transfers.php';
 
 			//Sandbox
 			//$clientId = 'AU9GCM5swF8clNxIuhqv-UdEaRqFrvMOKuxWcImmHSTwXB165uYLsWEdWvQygl3qKEERGB_C2F064MGi';
@@ -265,12 +275,11 @@ if(isset($_GET['token']) && isset($_GET['invoice'])) {
 	            var access_token = "<?php echo $access_token; ?>";
 	            var paymentID = "<?php echo $paymentID; ?>";
 	            var paypalMode = "<?php echo $paypalMode; ?>";
-	            var payURL = "checkout.php?token=" + access_token + "&payerId=" + payerId + "&paymentID=" + paymentID + "&invoice=<?php echo $custom; ?>&emailbuyer=<?php echo $payerEmail; ?>&language=<?php echo $languageSite; ?>&letterlang=<?php echo $letterlang; ?>";
+	            var payURL = "checkout.php?token=" + access_token + "&payerId=" + payerId + "&paymentID=" + paymentID + "&invoice=<?php echo $custom; ?>&emailbuyer=<?php echo $payerEmail; ?>&language=<?php echo $languageSite; ?>&letterlang=<?php echo $letterlang; ?>&viewCeros=<?php echo $viewCeros ?>";
 	            $('#payNowButton').prop('href', payURL);
 
 	            $('#continueButton').attr('disabled','disabled');
 				
-				console.log('SI LLEGA HASTA AQUI');
 				console.log('Mete un loader gif');	            
 	            setTimeout(function(){ window.location.href = payURL; }, 100);
 	            

@@ -3,6 +3,7 @@ $(function(){
     let code = "";
     loadConciliations(con, code);
     $('#conciliacion_multi_select').hide();
+    $('#content_edit_reserva').hide();
     $('.column_mult').hide();
 
     /* CARGA DE DATOS */
@@ -309,6 +310,222 @@ $(function(){
                 }
           });
     });
+    
+    $(document).on('click','.reservation-action',function(){
+      let id = $(this).data('id');
+      let edit = $(this).data('edit');
+      loadEditReservation(id,edit);
+    });
+    
+    $('.close_content_edit_reserva').click(function(){
+      $('#form-content-edit-agencie').trigger('reset');
+      $("#content_edit_reserva").hide( "drop", { direction: "right" }, "slow" );
+      $.ajax({
+        beforeSend: function(){
+          let template = '';
+          template += `    
+              <div class="loader"></div>
+          `;
+          $('#loading').html(template);
+        },
+        complete: function(){
+          $("#content_reservs_search").show( "drop", { direction: "left"}, "slow" );
+          setTimeout(function(){  $(".loader").fadeOut("slow"); }, 200);
+        }
+      });
+
+    });
+    function loadEditReservation(id, edit){
+        if (edit == 1) {
+          $('#content_btns').show();
+          $('#form-content-edit-agencie :input').prop('disabled', false);
+        }else{
+          $('#content_btns').hide();
+          $('#form-content-edit-agencie :input').prop('disabled', false);
+          $('#form-content-edit-agencie :input').prop('disabled', true);
+
+        }
+        $('#content_inp_code_client').hide(); 
+        $('#content_inp_asesor').hide(); 
+        $('#content_inp_ofagencie').hide(); 
+        $('#content_inp_interhotel').hide();
+        $('#inps_entrada_edit').hide();
+        $('#inps_salida_edit').hide();
+        $('#inp_pickup_edit').hide();
+        $('#content_comission_agency').hide();
+        $('#content_subtotal').hide();
+        $('#pick_up_exit').hide();
+        $('#compartido_ts').show();
+        $('#card').hide();
+        $('#transfer').hide();
+        $('#paypal').hide();
+        $('#airport').hide();
+        $('#inp_time_service_edit').hide();
+        let code = $(this).data('code');
+        let yt = $('#inp_internal_yt').val();
+        $('#code_invoice_edit_alert').val(id);
+        $('#inp_id_reservation').val(id);
+        $('#title_edit_res').text('Editar Reservación '+code);
+        const postDatas = {
+          'id': id,
+          'get_data_reserva': true
+        }
+        $.ajax({
+            data: postDatas,
+            url: '../helpers/reservaciones.php',
+            type: 'post',
+            beforeSend: function(){
+              $("html, body").animate({scrollTop: 0}, 1000);
+              let template = '';
+              template += `    
+                  <div class="loader"></div>
+              `;
+              $('#loading').html(template);
+            },
+            success: function(data){
+              const res = JSON.parse(data);
+              if (res.type_service == 'compartido') {
+                $('#inp_time_service_edit').show();
+                $('#inp_time_service').val(res.time_service);
+                
+              }
+              $('#transfer').show();
+              switch (res.method_payment) {
+                case 'card':
+                  $('#card').show();
+                  break;
+                case 'paypal':
+                  $('#paypal').show();
+                  break;
+              
+                case 'airport':
+                  $('#airport').show();
+                  break;
+              }
+              let methodpayment ="";
+              switch (res.method_payment) {
+                case 'card':
+                    methodpayment = 'TARJETA';
+                    break;
+                case 'transfer':
+                    methodpayment = 'TRANSFERENCIA';
+                    break;
+                case 'paypal':
+                    methodpayment = 'PAYPAL';
+                    break;
+                case 'airport':
+                    methodpayment = 'PAGO AL ABORDAR';
+                    break;
+              }
+              $('#title_reservation').text('Reservación - '+res.code_invoice);
+              new_of_the_agency ="";
+              if (yt == 1) {
+                  $('#content_inp_code_client').show(); 
+                  $('#content_inp_asesor').show(); 
+                  $('#content_inp_ofagencie').show();
+                  if (res.code_client) { 
+                    $('#inp_code_client_edit').val(res.code_client);
+                  }
+                  if (res.name_advisor) {
+                    $('#inp_asesor_edit').val(res.name_advisor);
+                  }
+                  if (res.of_the_agency) { 
+                    $('#inp_ofagency_edit').val("");
+                    if (res.of_the_agency != res.id_agency) {
+                      $('#inp_ofagency_edit').val(res.of_the_agency);
+                    }
+                  }
+              }
+              $('#inp_hotel_edit').val(res.transfer_destiny);
+              if (res.type_transfer == 'REDHH' || res.type_transfer == 'SEN/HH') {
+                $('#content_inp_interhotel').show();
+                $('#inp_hotel_interhotel_edit').val(res.destiny_interhotel);
+              }
+              $('#inp_traslado_up').val(res.type_transfer);
+              $('#inp_servicio_edit').val(res.type_service);
+              if (res.type_service == 'lujo') {
+                $('.num_px_pri').hide();
+              }else{
+                $('.num_px_pri').show();
+
+              }
+              $('#inp_pasajeros_edit').val(res.number_adults);
+              if (res.type_transfer == 'SEN/AH' || res.type_transfer == 'RED') {
+                $('#label_date_star').text('Llegada');
+                $('#inps_entrada_edit').show();
+                $('#datepicker_arrival_edit').val(res.date_arrival);
+                $('#inp_airline_entry_edit').val(res.airline_in);
+                $('#inp_nofly_entry_edit').val(res.no_fly);
+                $('#inp_hour_entry_edit').val(res.time_hour_arrival);
+                $('#inp_minute_entry_edit').val(res.time_min_arrival);
+              }
+              if (res.type_transfer == 'SEN/HA' ) {
+                $('#label_date_star').text('Salida');
+                $('#inps_entrada_edit').show();
+                $('#datepicker_arrival_edit').val(res.date_exit);
+                $('#inp_airline_entry_edit').val(res.airline_out);
+                $('#inp_nofly_entry_edit').val(res.no_flyout);
+                $('#inp_hour_entry_edit').val(res.time_hour_exit);
+                $('#inp_minute_entry_edit').val(res.time_min_exit);
+              }
+              if (res.type_transfer == 'RED') {
+                $('#label_date_star').text('Llegada');
+                $('#inps_salida_edit').show();
+                $('#datepicker_exit_edit').val(res.date_exit);
+                $('#inp_airline_exit_edit').val(res.airline_out);
+                $('#inp_nofly_exit_edit').val(res.no_flyout);
+                $('#inp_hour_exit_edit').val(res.time_hour_exit);
+                $('#inp_minute_exit_edit').val(res.time_min_exit);
+              }
+              if (res.type_transfer == 'SEN/HH' || res.type_transfer == 'REDHH') {
+                $('#inp_pickup_edit').show();
+                $('#datepicker_pickup_arrival_edit').val(res.date_arrival);
+                $('#inp_hour_pick_edit').val(res.time_hour_arrival);
+                $('#inp_minute_pick_edit').val(res.time_min_arrival);
+                $('#compartido_ts').hide();
+
+              }
+              if ( res.type_transfer == 'REDHH') {
+                $('#inp_pickup_edit').show();
+                $('#pick_up_exit').show();
+                $('#datepicker_pickup_exit_edit').val(res.date_exit);
+                $('#inp_hour_pick_inter_edit').val(res.time_hour_exit);
+                $('#inp_minute_pick_inter_edit').val(res.time_min_exit);
+                $('#compartido_ts').hide();
+              }
+
+              $('#inp_date_register_res_edit').val(res.date_register_reservation);
+              $('#inp_status_reserva_edit').val(res.status_reservation);
+              $('#inp_method_payment_edit').val(res.method_payment);
+              $('#inp_total_cost_edit').val(res.total_cost);
+              $('.currency').text(res.type_currency);
+              if (res.method_payment == 'card' || res.method_payment == 'paypal') {
+                $('#content_comission_agency').show();
+                $('#content_subtotal').show();
+                $('#inp_agency_commision_edit').val(res.agency_commision);
+                $('#inp_total_cost_commesion_edit').val(res.total_cost_commision);
+                $('#inp_total_cost_before').val(res.total_cost_commision);
+              }else{
+                $('#inp_total_cost_commesion_edit').val(res.total_cost);
+                $('#inp_total_cost_before').val(res.total_cost);
+
+              }
+              $('#inp_name_client_edit').val(res.name_client);
+              $('#inp_lastname_client_edit').val(res.last_name);
+              $('#inp_mother_lastname_edit').val(res.mother_lastname);
+              $('#inp_email_client_edit').val(res.email_client);
+              $('#inp_phone_client_edit').val(res.phone_client);
+              $('#inp_country_client_edit').val(res.country_client);
+              $('#inp_special_requests_edit').val(res.comments_client);
+              $('#inp_code_invoice').val(res.code_invoice);
+              $("#content_reservs_search").hide( "drop", { direction: "left"}, "slow" );
+              $("#content_edit_reserva").show( "drop", { direction: "right" }, "slow" );
+              setTimeout(function(){  $(".loader").fadeOut("slow"); }, 300);
+             
+              
+            }
+        });
+    }
     //BTN CANCELAR CONCILIACION UNICA CU
     $(document).on('click', '.btn_close_conci', function(){
       $('#files_conciliation').val('');

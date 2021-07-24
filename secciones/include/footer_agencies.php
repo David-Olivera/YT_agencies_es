@@ -13,7 +13,7 @@
                     <div class="footer-social f-right">
                         <a href="#"><i class="fab fa-twitter"></i></a>
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fas fa-globe"></i></a>
+                        <a href="https://www.yamevitravel.com/" target="_black"><i class="fas fa-globe"></i></a>
                         <a href="#"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
@@ -25,7 +25,9 @@
                     <a href="#">Aviso de privacidad</a>
                 </div>
                 <div class="col-lg-3 col-md-6 col-sm-6">
-                    <a >Contacto - 9988974495</a>
+                    <a >Contacto Oficina  -  9988831142</a>
+                    <br>
+                    <a> Contacto Celular  -  +52 9982939012</a>
                 </div>
             </div>
         </div>
@@ -44,7 +46,7 @@
       <div class="modal-body text-center p-4">
         <h4>Monedero disponible:</h4>
         <div id="val_electronic_purse"></div>
-        <p><small>El monedero pueder utilizado como método pago en la reserva que guste realizar.</small></p>
+        <p><small>El monedero puede ser utilizado como método de pago en la reserva que guste realizar.</small></p>
         <a href="transfers.php" class="btn btn-yamevi btn-sm" data-animation="fadeInLeft" data-delay=".8s">Reservar Ahora</a>
       </div>
     </div>

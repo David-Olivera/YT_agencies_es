@@ -47,7 +47,22 @@
             $new_date_en = "";
             $new_date_ex = "";
             $type_currency ="";
-            
+            $status_conci = 0;
+            //VARIABLES DE MONEDERO ELECTRONICO
+            $discount_electronic_purse = mysqli_real_escape_string($con,$ins->{'discount_electronic_purse'});
+            $change_type = mysqli_real_escape_string($con,$ins->{'change_type'});
+            $today_ep = date('Y-m-d H:i:s');
+            $status = 0;
+            $charge_ep = "";
+            $charge_ep_usd = "";
+            $charge_expense = "";
+            $caracteres = "0123456789";
+            srand((double)microtime()*1000000);
+            $rand = '';
+            for($i = 0; $i < 10; $i++) {
+                $rand .= $caracteres[rand()%strlen($caracteres)];
+            }
+            $folio = '000'.$rand;
             //Generador de codigo
             $caracteres = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             srand((double)microtime()*1000000);
@@ -96,13 +111,78 @@
                 $type_currency = 'us';
                 $new_value_total_cost = $total_usd;
             }
+            if ($discount_electronic_purse != 0) {
+                if ($method_peyment == 'card' || $method_peyment == 'paypal') {
+                    if ($currency == 'USD') {
+                        $charge_ep_usd = round($amount_total * $change_type);
+                        if ($discount_electronic_purse >= $charge_ep_usd) {
+                            $charge_ep = $charge_ep_usd;
+                            $charge_expense = $amount_total;
+                        }else{
+                            $charge_ep = $discount_electronic_purse;
+                            $charge_expense = round($discount_electronic_purse / $change_type);
+                        }
+                    }else{
+                        if ($discount_electronic_purse >= $amount_total) {
+                            $charge_ep = $amount_total;
+                            $charge_expense = $amount_total;
+                        }else{
+                            $charge_ep = $discount_electronic_purse;
+                            $charge_expense = $discount_electronic_purse;
+                        } 
+                    }
+                }
+                
+                if ($method_peyment == 'oxxo' || $method_peyment == 'transfer' || $method_peyment == 'airport'){
+                    if ($currency == 'USD') {
+                        $charge_ep_usd = round($new_value_total_cost * $change_type);
+                        if ($discount_electronic_purse >= $charge_ep_usd) {
+                            $charge_ep = $charge_ep_usd;
+                            $charge_expense = $new_value_total_cost;
+                        }else{
+                            $charge_expense = round($discount_electronic_purse / $change_type);
+                            $charge_ep = $discount_electronic_purse;
+                        }
+                    }else {            
+                        if ($discount_electronic_purse >= $new_value_total_cost) {
+                            $charge_expense = $new_value_total_cost;
+                            $charge_ep = $new_value_total_cost;
+                        }else{
+                            $charge_expense = $discount_electronic_purse;
+                            $charge_ep = $discount_electronic_purse;
+                        } 
+                    }
+                }
+            }
             //Insertamos datos Reserva
             $id_agency = $id_agencie;
 			date_default_timezone_set('America/Cancun');
 			$today = date('Y-m-d');
             $state = "COMPLETED";
-            if ($method_peyment == "transfer" || $method_peyment == "card" || $method_peyment == "paypal" || $method_peyment == "oxxo") {
+            if ($method_peyment == "transfer" || $method_peyment == "card" || $method_peyment == "paypal" || $method_peyment == "oxxo" || $method_peyment == 'a_pa' || $method_peyment == 'a_transfer' || $method_peyment == 'a_paypal' || $method_peyment == 'a_card') {
                 $state = "RESERVED";
+            }
+            if ($discount_electronic_purse != 0) {
+                if ($currency == 'USD') {
+                    if (($discount_electronic_purse >= $charge_ep_usd && ($method_peyment == 'card' || $method_peyment == 'paypal' )) || ($discount_electronic_purse >= $charge_ep_usd && ($method_peyment != 'card' && $method_peyment != 'paypal'))) {
+                        $state = 'COMPLETED';
+                        $status_conci = 1;
+                    }else{
+                        $state = 'RESERVED';
+                        $status_conci = 0; 
+                    }
+                }else {
+                    if (($discount_electronic_purse >= $amount_total && ($method_peyment == 'card' || $method_peyment == 'paypal')) || ($discount_electronic_purse >= $new_value_total_cost && ($method_peyment != 'card' && $method_peyment != 'paypal'))) {
+                        $state = 'COMPLETED';
+                        $status_conci = 1;
+                    }else{
+                        $state = 'RESERVED';
+                        $status_conci = 0; 
+                    }
+                }
+            }
+            if ($method_peyment == 'a_pa' || $method_peyment == 'a_transfer' || $method_peyment == 'a_paypal' || $method_peyment == 'a_card') {
+                $new_value_total_cost = $amount_total;
             }
             //Insertamos datos Clientes
             $query_client = "INSERT INTO clients(code_client,name_advisor,name_client,last_name,mother_lastname,email_client,phone_client,comments_client,country_client)VALUES('$code_reserv','$name_advisor','$name_client','$lastname_client','$mother_lastname','$email_client','$phone_client','$special_requests','$country');";
@@ -113,12 +193,25 @@
             VALUES('$type_service', '$airline_entry', '$nofly_entry', '$airline_exit', '$nofly_exit','$code_invoice', '$state','$today','$hotel_origin','$hotel_destiny',$id_client,$id_agency,$of_the_agency,'$letter_lang');";
             $result_reserv = mysqli_query($con, $query_reserva);
             $id_reserva = mysqli_insert_id($con);
+            if ($discount_electronic_purse != 0) {
+                //INSERCION DE MONEDERO ELECTRONICO
+                $query_electronic = "INSERT INTO electronic_purse(id_agency, id_reservation, id_user, folio,descripcion_electronic,amount_electronic,date_register_electronic,status)VALUES($id_agency, $id_reserva, 298, '$folio', 'COMPRA CON MONEDERO ELECTRONICO', '-$charge_ep', '$today_ep', 0);";
+                $result_electronic = mysqli_query($con, $query_electronic);
+                $query_expense = "INSERT INTO expenses(expense_amount,type_currency,concept,id_reservation,id_user,date_expense,type_expense_service,charge_type,inaccount)VALUES($charge_expense,'$currency','COMPRA CON MONEDERO ELECTRONICO',$id_reserva,298,'$today_ep','A','D', '$today');";
+                $result_expense = mysqli_query($con, $query_expense);
+            }
             //Insertamos datos Detalles Reserva
             $query_detalles = "INSERT INTO reservation_details(id_reservation, date_arrival,date_exit, time_arrival, time_exit, time_service, number_adults, agency_commision, total_cost_commision, total_cost, type_currency, change_type, type_service, method_payment)
             VALUES($id_reserva, '$new_date_en', '$new_date_ex', '$new_time_en', '$new_time_ex', '$time_service' ,$pasajeros,'$service_charge', $amount_total, $new_value_total_cost, '$type_currency', $type_change, '$type_transfer','$method_peyment');";
             $result_detalles = mysqli_query($con, $query_detalles);
+            if ($special_requests != '') {
+                date_default_timezone_set('America/Cancun');
+                $today_n = date('Y-m-d H:i:s');
+                $query_comment = "INSERT INTO bitacora(comments,id_user,id_reservation,register_date,status)VALUES('$special_requests', 298, $id_reserva, '$today_n',0);";
+                $result_comment = mysqli_query($con,$query_comment);
+            }
             //Insertamos datos Conciliacion
-            $query_concilia = "INSERT INTO conciliation(id_reservation, id_agency, register_date) VALUES($id_reserva, $id_agency, '$today');";
+            $query_concilia = "INSERT INTO conciliation(id_reservation, id_agency, status, register_date) VALUES($id_reserva, $id_agency, $status_conci ,'$today');";
             $result_concilia = mysqli_query($con, $query_concilia);
             //Diseño de carta de confirmacion
             if ($result_reserv && $result_detalles && $result_concilia && $result_client) {
@@ -1747,7 +1840,7 @@
                          }
                         </style>
                         <body style="margin: 0; padding: 20px; font-family: Arial, sans-serif"> 
-                            <table align="center"  cellpadding="0" cellspacing="0" width="700" class="table" id="table_ticket"> 
+                            <table align="center"  cellpadding="0" cellspacing="0" width="700" class="table" id="table_ticket" style="border: 1px solid #a5a5a5;"> 
                                 <tr>
                                     <td style="padding-left: 20px; padding-right: 20px;">
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:20px 5px 20px 5px; border-bottom: 1px solid #a5a5a5;">
@@ -1756,7 +1849,7 @@
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td align="center">
-                                                                <img src="../assets/img/agencias/'.$logo_agencie.'" alt="" width="60%" height="80" class="w-40" style="display: block;" />
+                                                                <img src="https://www.yamevitravel.com/es/assets/img/agencias/'.$logo_agencie.'" alt="" width="50%" height="70" class="w-40" style="display: block;" />
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -1776,7 +1869,7 @@
                                                     <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                                         <tr>
                                                             <td align="center">
-                                                                <img src="../assets/img/agencias/yt_small.png" alt="" width="auto" height="auto" style="display: block; padding-top: 10px; text-align: center;" />                                    
+                                                                <img src="http://localhost:8080/es/assets/img/agencias/logo_yamevi.png" alt="" width="90" height="70" style="display: block; padding-top: 10px; text-align: center;" />                                    
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -2337,7 +2430,7 @@
                                                         <tr>
                                                             <td>
                                                                 <h5 style="margin-block-end: 0.5em;">'.$n_nombre.'</h5>
-                                                                <small>'.$obj->name_client.' '.$obj->last_name.'</small>
+                                                                <small>'.$obj->name_client.' '.$obj->last_name.' '.$obj->mother_lastname.'</small>
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -2451,7 +2544,7 @@
                 //Footer
                 $template.= '
                             <div class="saltopagina"></div>
-                            <table align="center"  cellpadding="0" cellspacing="0" width="700" class="table" id="table_ticket">
+                            <table align="center"  cellpadding="0" cellspacing="0" width="700" class="table" id="table_ticket"  style="border: 1px solid #a5a5a5;">
                                 <tr>
                                     <td style="padding: 15px 10px 0 10px;" id="terms_conditions">
                                         '.$footer_letter.'
@@ -2530,9 +2623,11 @@
                 }
                 if ($obj->method_payment == 'card') {
                     if ($obj->status_reservation == 'RESERVED') {
-                        return json_encode(array('invoice' => $obj->code_invoice, 'status' => 1));
+                        return json_encode(array('invoice' => $obj->code_invoice, 'status' => 1, 'status_r' => $obj->status_reservation, 'method_payment' => $obj->method_payment));
                     }
                     if ($obj->status_reservation == 'COMPLETED') {
+                        $status =1;
+                        return $status;
                         //Cliente
                         //mail($obj->email_client, $subjectClient, $template, $headerClient);
                         //Ventas
@@ -2543,7 +2638,7 @@
                     
                     //mail('reservaciones@yamevitravel.com', $subjectClient, $template,$headerSales);
 
-                    return json_encode(array('invoice' => $obj->code_invoice, 'status' => 1));
+                    return json_encode(array('invoice' => $obj->code_invoice, 'status' => 1,'status_r' => $obj->status_reservation, 'method_payment' => $obj->method_payment));
                 }
             }
             //return $template;
@@ -2580,26 +2675,26 @@
             $code_invoice = mysqli_real_escape_string($con, $id);
             $status = mysqli_real_escape_string($con, $sta);
             $response = false;
-            $query = "UPDATE reservation SET status_reservation = $sta WHERE code_invoice like '$code_invoice'";
+            $query = "UPDATE reservations SET status_reservation = '$status' WHERE code_invoice like '$code_invoice'";
             $result = mysqli_query($con, $query);
             if ($result) {
                 $response = true;
             }
             return $response;
         }
-        function callToLetter($code_invoice, $letter_lang){
+        function callToLetter($code_invoice, $letter_lang, $viewCeros){
             include('../config/conexion.php');
             $id_reservation = $this->getIdReservation($code_invoice);
-            $reservation = $this->createLetterConfirm($id_reservation,$letter_lang,$con,$ticket =0, $total="");
+            $reservation = $this->createLetterConfirm($id_reservation,$letter_lang,$con,$ticket =0, $viewCeros);
             return $reservation;
         }
         private function getIdReservation($invoice){
             include('../config/conexion.php');
             $code_invoice = mysqli_real_escape_string($con, $invoice);
-            $query = "SELECT id_reservation FROM reservation WHERE code_invoice like '$code_invoice'";
+            $query = "SELECT id_reservation FROM reservations WHERE code_invoice like '$code_invoice'";
             $result = mysqli_query($con, $query);
             if ($result) {
-                $obj = mysqli_fetch_object($result_letter);
+                $obj = mysqli_fetch_object($result);
                 $id_reservation = $obj->id_reservation;
             }
             return $id_reservation;

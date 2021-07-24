@@ -26,9 +26,9 @@ if (isset($_SESSION['yt_id_agency'])) {
     <div class="backgound_img" data-background="../assets/img/hero/h1_hero.jpg">
         <?php include('include/navigation_agencies.php');?>
         <div class="container container_pages">
-            <h3 class="text-danger">RESERVACIÓN COMPLETADA</h3>
+            <h3 class="text-danger">Gracias por elegir Yamevi Travel</h3>
             <br>
-            <p>Su reservación ha sido creada de forma exitosa, en los próximos minutos el cliente deberá recibir su carta de confirmación a la dirección de correo proporcionada en el proceso de reservación.<br><br> Si por alguna razón no encuentra su correo en la bandeja de entrada es importante verificar la bandeja de SPAM.</p>
+            <p>Su pago se encuentra en proceso, tan pronto como sea completado deberá recibir la información para tomar su servicio.</p>
             <a href="reservations.php" class="btn btn-sm btn-yamevi" data-animation="fadeInLeft" data-delay=".8s">Mis Reservaciones</a>
         </div>
     </div>

@@ -42,6 +42,7 @@
                             $_SESSION['yt_card'] = $conf->{'card'};
                             $_SESSION['yt_operadora'] = $conf->{'operadora'};
                             $_SESSION['yt_internal_yt'] = $conf->{'internal_yt'};
+                            $_SESSION['tiempo'] = time();
                            if($_SESSION){
                               $status = 1 ;
                            }else{

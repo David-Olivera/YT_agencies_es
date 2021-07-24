@@ -42,7 +42,7 @@
                     <a class="nav-link " href="account.php?a='.$id_agency.'">'.$_SESSION['yt_username'].' - '.$_SESSION['yt_id_agency'].' </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link " href="../helpers/logout_a.php">Salir</a>
+                        <a class="nav-link " title="Salir" href="../helpers/logout_a.php"><i class="fas fa-sign-out-alt"></i></a>
                     </li>
                 </ul>
             </div>

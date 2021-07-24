@@ -722,6 +722,12 @@ if ($_SESSION['yt_id_agency']) {
                                                         <option id="card" value="card">TARJETA</option>
                                                         <option id="paypal" value="paypal">PAYPAL</option>
                                                         <option id="airport" value="airport">PAGO AL ABORDAR</option>
+                                                        <?php if($internal_yt == 1){ ?>
+                                                        <option id="a_transfer" value="a_transfer">SITIOWEB-TRANSFERENCIA</option>
+                                                        <option id="a_card" value="a_card">SITIOWEB-TARJETA</option>
+                                                        <option id="a_paypal" value="a_paypal">SITIOWEB-PAYPAL</option>
+                                                        <option id="a_pa" value="a_pa">SITIOWEB-PAGO AL ABORDAR</option>
+                                                        <?php } ?>
                                                     </select>
                                                 </div>
                                                 <div class="form-group mb-0 col-md-2 pl-1" id="content_subtotal">

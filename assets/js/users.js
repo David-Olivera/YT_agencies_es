@@ -118,12 +118,12 @@ $(function(){
             $('#inp_user_username').focus();
             return false;
         }
-        if (postDatas.password == null || postDatas.password.length == 0 || /^\s+$/.test(postDatas.password)) {
+        if (postDatas.password == null || postDatas.password.length == 0 ||  postDatas.password.length < 8 || /^\s+$/.test(postDatas.password)) {
             $('#inp_user_password').addClass(" is-invalid");
             $('#inp_user_password').focus();
             return false;
         }
-        if (postDatas.password_confirm == null || postDatas.password_confirm.length == 0 || /^\s+$/.test(postDatas.password_confirm)) {
+        if (postDatas.password_confirm == null || postDatas.password_confirm.length == 0 || postDatas.password_confirm.length < 8 || /^\s+$/.test(postDatas.password_confirm)) {
             $('#inp_user_password_confirm').addClass(" is-invalid");
             $('#inp_user_password_confirm').focus();
             return false;
@@ -336,5 +336,23 @@ $(function(){
             $(this).addClass(' is-invalid');
             return false;
         }
+    });
+    //Removemos class al cambiar de Paso 3
+    $(document).on('keyup', '#inp_user_password', function(){
+      if ($.trim($(this).val()).length > 8) {
+          $(this).removeClass(' is-invalid');
+          $(this).addClass(' is-valid');
+      } else {
+          $(this).addClass(' is-invalid');
+      }
+    });
+    //Removemos class al cambiar de Paso 3
+    $(document).on('keyup', '#inp_user_password_confirm', function(){
+      if ($.trim($(this).val()).length > 8) {
+          $(this).removeClass(' is-invalid');
+          $(this).addClass(' is-valid');
+      } else {
+          $(this).addClass(' is-invalid');
+      }
     });
 });

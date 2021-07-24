@@ -30,6 +30,9 @@ table tr th {
   -ms-user-select: none;
   user-select: none;
 }
+.a + .b {
+  margin-top: 4em;
+}
 .w-40{
   width: 40%!important;
 }

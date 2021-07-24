@@ -88,11 +88,17 @@ if ($_SESSION['yt_id_agency']) {
                         <div class="form-group">
                             <label for="inp_user_username">Contraseña</label>
                             <input type="password" class="form-control form-control-sm" autocomplete="off" id="inp_user_password"  placeholder="Ingresa la contraseña de usuario">
+                            <div class="invalid-feedback">
+                            La contraseña debe ser mayor de 8 digitos
+                            </div>
                         </div>
                         
                         <div class="form-group">
                             <label for="inp_user_username">Confirme Contraseña</label>
                             <input type="password" class="form-control form-control-sm" autocomplete="off" id="inp_user_password_confirm"  placeholder="Confirme la contraseña de usuario">
+                            <div class="invalid-feedback">
+                            La contraseña debe ser mayor de 8 digitos
+                            </div>
                         </div>
                         <div class="form-group pt-3">
                             <a  id="btn_new_user" class="btn btn-block btn-yamevi_2">Agregar Usuario</a>

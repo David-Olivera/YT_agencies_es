@@ -22,19 +22,19 @@
 	$offset = ($page_no-1) * $limit;
 
 	$query = "SELECT * FROM reservations AS R INNER JOIN clients AS C ON R.id_client = C.id_client
-	INNER JOIN reservation_details AS D ON D.id_reservation = R.id_reservation WHERE R.id_agency = $id_agency ORDER BY R.id_reservation DESC LIMIT $offset, $limit";
+	INNER JOIN reservation_details AS D ON D.id_reservation = R.id_reservation WHERE R.id_agency = $id_agency OR R.of_the_agency = $id_agency ORDER BY R.id_reservation DESC LIMIT $offset, $limit";
 	if ($_POST['date_en'] && $_POST['date_ex']) {
 		$date_en = $_POST['date_en'];
 		$date_ex = $_POST['date_ex'];
 		$search = 1;
 		$query ="SELECT * FROM reservations AS R INNER JOIN clients AS C ON R.id_client = C.id_client
-		INNER JOIN reservation_details AS D ON D.id_reservation = R.id_reservation WHERE (R.id_agency = $id_agency)  AND ((D.date_arrival >= '$date_en' AND D.date_arrival <= '$date_ex') OR (D.date_exit >= '$date_en' AND D.date_exit <= '$date_ex')) ORDER BY R.id_reservation DESC LIMIT $offset, $limit";	
+		INNER JOIN reservation_details AS D ON D.id_reservation = R.id_reservation WHERE (R.id_agency = $id_agency OR R.of_the_agency = $id_agency)  AND ((D.date_arrival >= '$date_en' AND D.date_arrival <= '$date_ex') OR (D.date_exit >= '$date_en' AND D.date_exit <= '$date_ex')) ORDER BY R.id_reservation DESC LIMIT $offset, $limit";	
 	}
 	if($_POST['code']){
 		$code = $_POST['code'];
 		$search = 1;
 		$query = "SELECT * FROM reservations AS R INNER JOIN clients AS C ON R.id_client = C.id_client
-		INNER JOIN reservation_details AS D ON D.id_reservation = R.id_reservation WHERE R.id_agency = $id_agency and R.code_invoice = '$code' ORDER BY R.id_reservation DESC LIMIT $offset, $limit";
+		INNER JOIN reservation_details AS D ON D.id_reservation = R.id_reservation WHERE R.id_agency = $id_agency OR R.of_the_agency = $id_agency and R.code_invoice = '$code' ORDER BY R.id_reservation DESC LIMIT $offset, $limit";
 		
 	}
 	$result = mysqli_query($con, $query);
@@ -181,6 +181,22 @@
                         case 'airport':
                             $methodpayment = 'Pago al Abordar';
                             break;
+							
+						case 'a_pa':
+							$methodpayment = "SitioWeb - Pago al Abordar";
+							break;
+								
+						case 'a_transfer':
+							$methodpayment = "SitioWeb - Transferencia";
+							break;
+							
+						case 'a_paypal':
+							$methodpayment = "SitioWeb - Paypal";
+							break;
+							
+						case 'a_card':
+							$methodpayment = "SitioWeb - Tarjeta";
+							break;
                     }
                     switch ($row['type_service']) {
                         case 'compartido':
@@ -232,10 +248,10 @@
 				</table>";
 			if ($search == 1) {
 				$sql = "SELECT * FROM reservations AS R INNER JOIN clients AS C ON R.id_client = C.id_client
-				INNER JOIN reservation_details AS D ON D.id_reservation = R.id_reservation WHERE (R.id_agency = $id_agency)  AND ((D.date_arrival >= '$date_en' AND D.date_arrival <= '$date_ex') OR (D.date_exit >= '$date_en' AND D.date_exit <= '$date_ex')) ORDER BY R.id_reservation desc";
+				INNER JOIN reservation_details AS D ON D.id_reservation = R.id_reservation WHERE (R.id_agency = $id_agency OR R.of_the_agency = $id_agency)  AND ((D.date_arrival >= '$date_en' AND D.date_arrival <= '$date_ex') OR (D.date_exit >= '$date_en' AND D.date_exit <= '$date_ex')) ORDER BY R.id_reservation desc";
 			}else{
 			$sql = "SELECT * FROM reservations AS R INNER JOIN clients AS C ON R.id_client = C.id_client
-            INNER JOIN reservation_details AS D ON D.id_reservation = R.id_reservation WHERE R.id_agency = $id_agency ORDER BY R.id_reservation desc";
+            INNER JOIN reservation_details AS D ON D.id_reservation = R.id_reservation WHERE R.id_agency = $id_agency OR R.of_the_agency = $id_agency ORDER BY R.id_reservation desc";
 			}
 			$records = mysqli_query($con, $sql);
 			$totalRecords = mysqli_num_rows($records);

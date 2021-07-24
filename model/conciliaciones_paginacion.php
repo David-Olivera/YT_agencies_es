@@ -29,8 +29,8 @@
 		$query = "SELECT * FROM conciliation AS C INNER JOIN reservations AS R ON C.id_reservation = R.id_reservation INNER JOIN clients AS CL ON R.id_client = CL.id_client
 		INNER JOIN reservation_details AS RD ON C.id_reservation = RD.id_reservation WHERE R.id_agency = $id_agency AND C.`status` = $type ORDER BY C.id_reservation DESC LIMIT $offset, $limit";
 	}
-	
 	$result = mysqli_query($con, $query);
+	
 	$output = "";
 	$newrole ='';
 	$newoutput = '';
@@ -78,18 +78,36 @@
 								<th>Cliente</th>
 								<th>Traslado</th>
 								<th>Servicio</th>
-								<th>Pasajeros</th>
-								<th class='hidden-sm'>Tarifa</th>
-								<th>Total</th>
+								<th>Pax</th>
+								<th class='hidden-sm'>Tarifa Neta</th>
+								<th>Precio Vendido</th>
+								<th>Pagado</th>
+								<th>CXC</th>
 								<th class='hidden-sm'>Metodo de Pago</th>
 								<th class='hidden-sm'>Estado</th>
-								<th>Fecha de Llegada</th>
-								<th>Fecha de Salida</th>
+								<th>Fecha Llegada</th>
+								<th>Fecha Salida</th>
+								<th class='column_only'>Detalles</th>
 								<th class='column_only'>Archivo</th>
 								</tr>
 						</thead>
 						<tbody>";
 			while ($row = mysqli_fetch_assoc($result)) {
+					$id_r = $row['id_reservation'];
+					$query_total = "SELECT SUM(expense_amount) as total FROM expenses WHERE id_reservation = $id_r;";
+					$result_t = mysqli_query($con, $query_total);
+					if ($result_t) {
+						$ins_t = mysqli_fetch_object($result_t);
+						$pagado = $ins_t->total != 0 ? $ins_t->total : 0.00;
+						$new_amount_total = $row['total_cost'] - $ins_t->total;
+						if ($row['method_payment'] == 'card' || $row['method_payment'] == 'paypal') {
+							$sum_comision = round(($row['total_cost'] + $row['agency_commision']) * 0.05);
+							$new_amount_total = $row['total_cost'] - $ins_t->total;
+							if ($new_amount_total < 0) {
+								$new_amount_total = $row['total_cost'] - $ins_t->total + $sum_comision;
+							}
+						}
+					}
 					$methodpayment = "";
 					$class_conciliation = 'btn-outline-yamevi_2';
 					$id_conci =  $row['id_conciliation'] ;
@@ -137,6 +155,22 @@
                         case 'airport':
                             $methodpayment = 'Pago al Abordar';
                             break;
+						
+						case 'a_pa':
+							$methodpayment = "SitioWeb - Pago al Abordar";
+							break;
+								
+						case 'a_transfer':
+							$methodpayment = "SitioWeb - Transferencia";
+							break;
+							
+						case 'a_paypal':
+							$methodpayment = "SitioWeb - Paypal";
+							break;
+							
+						case 'a_card':
+							$methodpayment = "SitioWeb - Tarjeta";
+							break;	
                     }
 					switch ($row['type_currency']) {
 						case 'mx':
@@ -170,10 +204,14 @@
 							<td>{$row['number_adults']}</td>
 							<td class='hidden-sm'>$ {$row['total_cost']} {$currency}</td>
 							<td>$ {$row['total_cost_commision']} {$currency}</td>
+							<td>$ {$pagado} {$currency}</td>
+							<td>$ {$new_amount_total} {$currency}</td>
 							<td class='hidden-sm' >{$methodpayment}</td>
 							<td class='hidden-sm' >{$row['status_reservation']}</td>
 							<td>{$date_arrival}</td>
 							<td>{$date_exit}</td>
+							<td class='text-center column_only'><a href='#' id='view_reservation' data-edit='0' data-id='{$row['id_reservation']}' data-code='{$row['code_invoice']}' title='Ver Reservación' class='reservation-action btn btn-outline-yamevi_2 btn-sm' ><i class='fas fa-eye' ></i></a>
+							</td>
 							<td class='text-center column_only'>
 								<a href='#' id='btn_upload_file' reserva='{$row['id_reservation']}'  conciliation='{$row['id_conciliation']}' code='{$row['code_invoice']}' type_conci='{$type}' class=' btn $class_conciliation btn-sm' data-toggle='modal' data-target='#upload_conliation'><i class='fas fa-file-upload'></i></a>
 							</td>

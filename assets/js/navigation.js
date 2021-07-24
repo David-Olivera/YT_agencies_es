@@ -1,7 +1,14 @@
 $(function(){
     loadElectronicPurse();
     loadExchangerate();
-    
+    $(document).ready(function(){
+        function load(){
+            loadExchangerate();
+            loadElectronicPurse();
+        }
+        setInterval(load, 5000);
+    });
+
     function loadElectronicPurse(){
         let id_agency = $('#inp_id_agency').val();
         const postData = {
@@ -14,11 +21,14 @@ $(function(){
             type: 'POST',
             success: function(res){
                 if (res != 0) {
+
                     $('#value_electronic_purse').html('$'+res);
                     $('#inp_electronic').val(res);
+                    $("#check_electronic_purse").prop("disabled", false);
                 }else{
                     $('#value_electronic_purse').html('$0.00');
                     $('#inp_electronic').val('0.00');
+                    $("#check_electronic_purse").prop("disabled", true);
                 }
             }
         });
@@ -30,7 +40,7 @@ $(function(){
             $('#val_electronic_purse').html('<h3 class="text-success"> $ ' + value_electronic + '</h3>');
         }else{
             
-            $('#val_electronic_purse').html('<h3>Monedero disponible: $0.00 </h3>');
+            $('#val_electronic_purse').html('<h3> $0.00 </h3>');
         }
     });
 

@@ -1,12 +1,12 @@
+    <?php  
+    session_start();  
 
-<?php  
- session_start();  
-
- if (isset($_SESSION['yt_id_agency'])) {
-    header('location: home.php');
-}else{
-}
- ?>
+    if (isset($_SESSION['yt_id_agency'])) {
+        header('location: home.php');
+    }else{
+    }
+    
+    ?>
 
 <!DOCTYPE html>
 <html lang="en">

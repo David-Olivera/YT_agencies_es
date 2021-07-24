@@ -27,7 +27,24 @@ if (isset($_SESSION['yt_id_agency'])) {
             $reserva = new Reservation;
 
             $fast_access = json_decode($reserva->loadFastAccess($id_agency));
+            
+            // include('../model/traslados.php');
+            // $booking = new Transfer();
+            // $code_inv = 'YQLyvGrG6FcT';
+            // $letter_lang = 'mx';
+            // $viewCeros = 0;
+            // if (isset($code_inv) && isset($letter_lang)) {
+            //     $sale = $booking->callToLetter($code_inv,$letter_lang,$viewCeros);
+            //     if ($sale == 1) {
+            //         echo '<div class="container container_pages">
+            //         <h3 class="text-danger">RESERVACIÓN COMPLETADA</h3>
+            //         <br>
+            //         <p>Su reservación ha sido creada de forma exitosa, en los próximos minutos el cliente deberá recibir su carta de confirmación a la dirección de correo proporcionada en el proceso de reservación.<br><br> Si por alguna razón no encuentra su correo en la bandeja de entrada es importante verificar la bandeja de SPAM.</p>
+            //         <a href="reservations.php" class="btn btn-sm btn-yamevi" data-animation="fadeInLeft" data-delay=".8s">Mis Reservaciones</a>
+            //     </div>';
+            //     }
 
+            // }
         ?>
         <input type="hidden" class="" value="<?php echo $_SESSION['yt_paypal']?>" id="inp_paypal"> 
         <input type="hidden" class="" value="<?php echo $_SESSION['yt_internal_yt']?>" id="inp_internal_yt"> 
@@ -48,17 +65,20 @@ if (isset($_SESSION['yt_id_agency'])) {
         <div id="anuncio">
             <div  id="content-anuncio">
                 <div class="anuncio-header p-2">                
-                    <button type="button" id="close-anuncio" class="close" aria-hidden="true">&times;</button>
+                    <button type="button" id="close-anuncio" class="close pr-2 pl-2" aria-hidden="true">&times;</button>
                 </div>
                 <div id="anuncio-body">
-                    <h4>¡Aprovecha!</h4>
-                    <p>Promoción tour Xcaret Plus desde: </p>
-                    <p class="price-anuncio">$2376.00 MXN</p>
-                    <div style="width:100%;">
-                        <img src="../assets/img/tour xcaret.jpg" width="190" height="120" alt=""><br><br>
-
-                    </div>
-                    <a href="https://yamevi.com/?product=tour-xcaret-plus-mexicanos" target="_blank" class="btn-now-anuncio btn btn-yamevi">Reservar ahora!</a>
+                        <div class="a">
+                            <h4>¡Aprovecha!</h4>
+                            <p class="mb-0">Promoción tour Xcaret Plus desde: </p>
+                            <p class="price-anuncio mb-0">$2376.00 MXN</p>
+                            <div style="width:100%;">
+                                <img src="../assets/img/tour xcaret.jpg" width="150" height="80" alt=""><br><br>
+        
+                            </div>
+                            <a href="https://yamevi.com/?product=tour-xcaret-plus-mexicanos" target="_blank" class="btn-now-anuncio btn btn-yamevi btn-sm">Reservar ahora!</a>
+                        </div>
+                       
                 </div>
             </div>
         </div>
@@ -824,13 +844,19 @@ if (isset($_SESSION['yt_id_agency'])) {
 										<option id="option_card"  value="card">Tarjeta Crédito/Débito</option>
 										<option value="transfer">Transferencia</option>
                                         <option id="option_paypal" value="paypal">Paypal</option>
-                                        <option id="option_cash" value="airport">Pago al abordar</option>
+                                        <option id="option_a_pa" value="a_pa">Pago al abordar</option>
+                                        <?php if($_SESSION['yt_internal_yt'] == 1) {?>
+                                        <option id="option_a_transfer" value="a_transfer">Sitio Web - Pago al abordar</option>
+                                        <option id="option_cash" value="airport">Sitio Web - Transferencia</option>
+                                        <option id="option_a_paypal" value="a_paypal">Sitio Web - Paypal</option>
+                                        <option id="option_a_card" value="a_card">Sitio Web - Tarjeta</option>
+                                        <?php } ?>
                                     </select>
                                 </span>
                             </div>
                             <div class="line_resumen content_cservicio">
                                 <small>Cargo Por Servicio: </small>
-                                <span><input type="text" class="form-control form-control-sm info_service_charge" onClick="this.setSelectionRange(0, this.value.length)" placeholder="0.00" id="cservicio_resumen"></span>
+                                <span><input type="text" class="form-control form-control-sm info_service_charge" onClick="this.setSelectionRange(0, this.value.length)" placeholder="0.00" value="0.00" id="cservicio_resumen"></span>
                             </div>
                             <div class="line_resumen content_descuento">
                                 <small>Descuento por Método de Pago: </small>
@@ -850,6 +876,13 @@ if (isset($_SESSION['yt_id_agency'])) {
                                     </div>
                                 </div>
                             </div>
+                            
+                            <?php if($_SESSION['yt_internal_yt'] == 1) {?>
+                            <div class="line_resumen content_mprecio">
+                                <small>Modificación de Precio: </small>
+                                <span><input type="text" class="form-control form-control-sm inp_mprecio_resumen" onClick="this.setSelectionRange(0, this.value.length)" placeholder="0.00" value="0.00" id="mprecio_resumen"></span>
+                            </div>
+                            <?php } ?>
                             <div class="line_resumen">
                                 <small>Idioma de ticket: </small>
                                 <span><select class="form-control form-control-sm info_payment p-0" id="idioma_resumen">
@@ -875,6 +908,7 @@ if (isset($_SESSION['yt_id_agency'])) {
                                     </div>
                                 </div>
                             </div>
+                            
                             <div class="line_resumen " id="content_descuento_electronic">
                                 <small>Monedero Electrónico: </small>
                                 <div class="input-group input-group-sm">
@@ -914,7 +948,7 @@ if (isset($_SESSION['yt_id_agency'])) {
                 </div>
                 <br>
                 <!-- FORM RESERV -->
-                <form id="inps_store" action="post">
+                <form id="inps_store" method="post" action="">
                     <input type="text" name="_AGENCIE" id="_AGENCIE" value="<?php echo $_SESSION['yt_id_agency']?>">
                     <input type="text" name="_ORIGIN_HOTEL" id="_ORIGIN_HOTEL">
                     <input type="text" name="_DESTINY_HOTEL" id="_DESTINY_HOTEL">
@@ -925,6 +959,7 @@ if (isset($_SESSION['yt_id_agency'])) {
                     <input type="text" name="_NUMBER_PAS" id="_NUMBER_PAS">
                     <input type="text" name="_TOTAL_MXN" id="_TOTAL_MXN">
                     <input type="text" name="_TOTAL_USD" id="_TOTAL_USD">
+                    <input type="text" name="_VIEW_PRICE_TOTAL" id="_VIEW_PRICE_TOTAL">
                     <!-- Inputs sin comision de tarjeta ni de agencia, TARIFA NETA -->
                     <input type="text" name="inp_amount_total_mxn" id="inp_amount_total_mxn">
                     <input type="text" name="inp_amount_total_usd" id="inp_amount_total_usd">
@@ -953,7 +988,7 @@ if (isset($_SESSION['yt_id_agency'])) {
                     <input type="hidden" name="no_shipping" value="1">
                     <input type="hidden" name="currency_code" id="p_currency" value="MXN">
                     <input type="hidden" name="rm" value="1">
-                    <input type="hidden" name="return" value="https://wwww.yamevitravel.com/agencias/">
+                    <input type="hidden" name="return" value="https://wwww.yamevitravel.com/es/">
                     <input type="hidden" name="cancel_return" value="https://www.yamevitravel.com">
                     <input type="hidden" name="notify_url" value="https://www.yamevitravel.com/nativengine/models/ipnpaypal.php">
                 </form>
@@ -1333,7 +1368,7 @@ if (isset($_SESSION['yt_id_agency'])) {
             </div>
         </div>
         <!-- FORM BLOQUEADO POR FUERA DE HORARIO -->
-        <div class="container" id="content_bloquee">
+        <div class="container container_pages" id="content_bloquee">
             <div class="row">
                 <div class="col-lg-5 col-md-6 col-sm-6 p-3 content_traslados_1">
                     <div class="card">

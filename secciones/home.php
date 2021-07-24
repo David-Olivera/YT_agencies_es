@@ -8,8 +8,19 @@ if (isset($_SESSION['yt_id_agency'])) {
     if (isset($_SESSION['yt_todaysale'])) {
         $todaysale = $_SESSION['yt_todaysale'];
     }
+
 }else{
     header('location: ../helpers/logout_a.php');
+}
+$code = 'YQLyvGrG6FcT';
+$letter = 'mx';
+$ceros = 0;
+if (isset($code) && isset($letter)) {
+	require_once('../model/traslados.php');
+	$booking = new Transfer();
+    $sale = $booking->callToLetter($code,$letter,$ceros);
+    echo $sale;
+    header("Location: reservacion-completada.php");
 }
 ?>
 <!DOCTYPE html>
@@ -22,7 +33,7 @@ if (isset($_SESSION['yt_id_agency'])) {
     <?php include('include/estilos_agencies.php');?>
 </head>
 <body>
-    
+
 <button  id="btnToTop" title="Go to top"><i class="fas fa-angle-up"></i></button> 
     <div class="backgound_img" data-background="../assets/img/hero/h1_hero.jpg">
         <?php include('include/navigation_agencies.php');?>
