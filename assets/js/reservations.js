@@ -296,7 +296,7 @@ $(function(){
             },
             success: function(data){
               const res = JSON.parse(data);
-              if (res.type_service == 'compartido') {
+              if (res.type_service == 'compartido' && (res.type_transfer == 'RED' || res.type_transfer == 'SEN/AH')) {
                 $('#inp_time_service_edit').show();
                 $('#inp_time_service').val(res.time_service);
                 
@@ -656,7 +656,7 @@ $(function(){
         $('#inp_pasajeros_edit').focus();
         return false;
       }
-      if (type_service == 'compartido') {
+      if (type_service == 'compartido' && (type_traslado == 'RED' || type_traslado == 'SEN/AH')) {
         time_service = $('#inp_time_service').val();
         if (time_service == null || time_service.length == 0 || /^\s+$/.test(time_service)) {
           $('#inp_time_service').addClass(" is-invalid");

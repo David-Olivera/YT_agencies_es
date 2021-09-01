@@ -8,6 +8,23 @@
     font-family:  'Poppins', sans-serif;
 }
 
+.btn-outline-yamevi_2{
+    background: transparent !important;
+    border-color: #5b5da3 !important;
+    color: #5b5da3 !important;
+    font-size: 12px !important;
+  }
+  .btn-outline-yamevi_2:hover{
+    background: #414380 !important;
+    border-color: #414380 !important;
+    color: #fff !important;
+    transition: 1s;
+  }
+  .btn-outline-yamevi_2:not(:disabled):not(.disabled).active{
+    background: #414380 !important;
+    border-color: #414380 !important;
+    color: #fff !important;
+  }
 p {
     font-family: 'Poppins', sans-serif;
     font-size: 1.1em;

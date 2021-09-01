@@ -79,6 +79,7 @@
 			}
 			$output .= "</ul>";
 
+			$con = null;
 			echo $output;
 
 		}else{
@@ -87,6 +88,7 @@
                 <p>No se encontro ningún usuario registrado</p>
 				<a href='#' data-toggle='modal' data-target='#modal_add_user' class='btn btn-yamevi' data-animation='fadeInLeft' data-delay='.8s'>Agregar Usuario</a><br>
             </div>";
+			$con = null;
 			echo $output;
 		}
 	}else{
@@ -95,6 +97,7 @@
             <p>No se encontro ningún usuario registrado</p>
 			<a href='#' data-toggle='modal' data-target='#modal_add_user' class='btn btn-yamevi' data-animation='fadeInLeft' data-delay='.8s'>Agregar Usuario</a><br>
         </div>";
+		$con = null;
 		echo $output;
 	}
 

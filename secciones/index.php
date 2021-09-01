@@ -39,8 +39,10 @@
     </div>
     <div class="main">
         <div class="col-md-6 col-sm-12">
+            <a  class="btn btn-outline-yamevi_2 btn-sm" onclick="myFunction()">-</a>
+
             <div class="login-form">
-              <form method="POST" name="login" id="login">
+              <form method="POST" name="login" id="login" style="display:none;">
                  <div class="form-group title-login-agen">
                     <h2>Iniciar Sesión</h2>
                  </div>
@@ -73,10 +75,18 @@
                  </div>
                  <div class="form-group" id="error_msg">
                  </div>
-				<!--<div class="d-flex">
+				<!-- /*<div class="d-flex">
 					<a href="#">Forgot your password?</a>
-				</div>-->
+				</div>*/ -->
               </form>
+                <div class="p 2">
+                    <div class="form-group title-login-agen">
+                        <h2>Página en Mantenimiento</h2>
+                    </div>
+                    <p>YameviTravel busca brindarle a nuestros clientes la mejor experiencia y comodidad <br/> Por favor ingrese al sistema anterior para realizar sus reservaciones
+                    temporalmente</p>
+                    <a href="https://www.yamevitravel.com/agencias/" class="btn btn-block btn-login-agencies">Ingresar a Sistema</a>
+                </div>
             </div>
         </div>
     </div>
@@ -90,4 +100,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="../assets/js/login.js"></script>
+    <script>
+        function myFunction() {
+            var x = document.getElementById("login");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+    </script>
 </html>

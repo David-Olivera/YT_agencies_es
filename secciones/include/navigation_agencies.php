@@ -28,8 +28,6 @@
                     </li>
                     <li '.(($page=='users.php')?'class="current nav-item "':'class="nav-item "').'>
                         <a class="nav-link " href="users.php">Usuarios</a>
-                    <li '.(($page=='tours.php')?'class="current nav-item "':'class="nav-item "').'>
-                        <a class="nav-link " href="tours.php">Tours</a>
                     </li>
                 </ul>                
                 <ul class="navbar-nav ml-md-auto mt-2 mt-lg-0">

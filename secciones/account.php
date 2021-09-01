@@ -1,11 +1,27 @@
 
 <?php
-require_once '../../YameviTravel/config/conexion.php';
+require_once '../config/conexion.php';
 session_start();
 if ($_GET['a']) {
     $id_agency = $_GET['a'];
 }
 if ($_SESSION['yt_id_agency']) {
+    //sino, calculamos el tiempo transcurrido
+    $fechaGuardada = $_SESSION["ultimoAcceso"];
+    $ahora = date("Y-n-j H:i:s");
+    $tiempo_transcurrido = (strtotime($ahora)-strtotime($fechaGuardada));
+
+    //comparamos el tiempo transcurrido
+    if($tiempo_transcurrido >= 600) {
+        ?>
+        <script type="text/javascript">
+        alert('Su sesion a sido cerrada por inactivididad, favor de iniciar sesión nuevamente');
+        window.location.href='../helpers/logout_a.php';
+        </script>
+        <?php
+    }else {
+        $_SESSION["ultimoAcceso"] = $ahora;
+    }
 }else{
     header('location: ../helpers/logout_a.php');
 }
@@ -53,19 +69,19 @@ if ($_SESSION['yt_id_agency']) {
                     <form id="agencyDataForm">
                         <div class="form-group">
                             <label for="exampleFormControlInput1">Nombre de Agencia</label>
-                            <input type="text" class="form-control form-control-sm" id="inp_name_agencie" placeholder="Ingrese el Nombre de la Agencia">
+                            <input type="text" class="form-control form-control-sm" id="inp_name_agencie" placeholder="Ingrese el Nombre de la Agencia" disabled>
                         </div>
                         <div class="form-row">
                             <div class="col">
                                 <div class="form-group">
                                     <label for="exampleFormControlInput1">Nombre de Contacto</label>
-                                    <input type="text" class="form-control form-control-sm" id="inp_name_contac" placeholder="Ingrese el Nombre del Contacto" >
+                                    <input type="text" class="form-control form-control-sm" id="inp_name_contac" placeholder="Ingrese el Nombre del Contacto" disabled>
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="form-group">
                                     <label for="exampleFormControlInput1">Apellido Paterno</label>
-                                    <input type="text" class="form-control form-control-sm" id="inp_lastname_contac" placeholder="Ingrese el Apellido paterno del Contacto" >
+                                    <input type="text" class="form-control form-control-sm" id="inp_lastname_contac" placeholder="Ingrese el Apellido paterno del Contacto" disabled>
                                 </div>
                             </div>
                         </div>
@@ -73,23 +89,23 @@ if ($_SESSION['yt_id_agency']) {
                             <div class="col">
                                 <div class="form-group">
                                     <label for="exampleFormControlInput1">Correo de Contacto</label>
-                                    <input type="email" class="form-control form-control-sm" id="inp_email_contact" placeholder="Ingrese el Email de Contacto" >
+                                    <input type="email" class="form-control form-control-sm" id="inp_email_contact" placeholder="Ingrese el Email de Contacto" disabled>
                                 </div>
                             </div>
                             <div class="col">
                                 <div class="form-group">
                                     <label for="exampleFormControlInput1">Correo de Pagos</label>
-                                    <input type="email" class="form-control form-control-sm" id="inp_email_pay" placeholder="Ingrese el Email de Pagos">
+                                    <input type="email" class="form-control form-control-sm" id="inp_email_pay" placeholder="Ingrese el Email de Pagos" disabled>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="exampleFormControlInput1">Teléfono</label>
-                            <input type="text" class="form-control form-control-sm" id="inp_phone_agencie" placeholder="Ingrese el Teléfono de Contacto">
+                            <input type="text" class="form-control form-control-sm" id="inp_phone_agencie" placeholder="Ingrese el Teléfono de Contacto" disabled>
                         </div>
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <button type="submit" id="saveButtonData" class="btn btn-yamevi btn-sm text-center p-2">Actualizar Datos</button>
-                        </div>
+                        </div> -->
                     </form>
                 </div>
                 <div class="col-lg-3 col-md-4">
@@ -157,7 +173,7 @@ if ($_SESSION['yt_id_agency']) {
                             </div>
                         </div>
                         <div class="form-group">
-                            <input type="text" class="form-control" id="name_age_img">
+                            <input type="hidden" class="form-control" id="name_age_img">
                         </div>
                         <div class="form-group mb-4">
                             <input id="file_agency" type ="file" name="imagen" class="form-control-sm" placeholder="Titulo" required>

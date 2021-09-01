@@ -1,9 +1,25 @@
 
 <?php
-require_once '../../YameviTravel/config/conexion.php';
+require_once '../config/conexion.php';
 session_start();
 $internal_yt = $_SESSION['yt_internal_yt'];
 if ($_SESSION['yt_id_agency']) {
+    //sino, calculamos el tiempo transcurrido
+    $fechaGuardada = $_SESSION["ultimoAcceso"];
+    $ahora = date("Y-n-j H:i:s");
+    $tiempo_transcurrido = (strtotime($ahora)-strtotime($fechaGuardada));
+
+    //comparamos el tiempo transcurrido
+    if($tiempo_transcurrido >= 600) {
+        ?>
+        <script type="text/javascript">
+        alert('Su sesion a sido cerrada por inactivididad, favor de iniciar sesión nuevamente');
+        window.location.href='../helpers/logout_a.php';
+        </script>
+        <?php
+    }else {
+        $_SESSION["ultimoAcceso"] = $ahora;
+    }
 }else{
     
     header('location: ../helpers/logout_a.php');

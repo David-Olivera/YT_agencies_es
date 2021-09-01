@@ -33,6 +33,7 @@
             $result = mysqli_query($con, $query);
             if($result){
                 $status = 1;
+                $con = null;
                 echo $status;
             }else {
                 echo $status;
@@ -64,6 +65,7 @@
             $result = mysqli_query($con, $query);
             if($result){
                 $status = 1;
+                $con = null;
                 echo $status;
             }else {
                 echo $status;
@@ -79,6 +81,7 @@
             $result = mysqli_query($con, $query);
             if($result){
                 $status = 1;
+                $con = null;
                 echo $status;
             }else{
                 echo $status;

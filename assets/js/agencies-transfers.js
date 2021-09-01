@@ -565,7 +565,6 @@ $(function(){
                 new_porcen = operadora /= 100;
                 $('.content_descuento_operadora').show('slow');
             }
-            console.log(descuento_operador);
             if (a_traslado == 'RED' || a_traslado == 'REDHH') {
                 nuevo_valor_mx = (precio_mxn_rt / cargo).toFixed(0);
                 nuevo_valor_us = (precio_us_rt / cargo).toFixed(0);
@@ -763,6 +762,7 @@ $(function(){
                 $('.content_descuento_operadora').show();
             }
             if (value == 'transfer' || value == 'airport' ) {
+                $('.content_mprecio').hide('slow');
                 $('#_PAYMENT').val('transfer');
                 mx = $('#info_import').data('ratemx'); //getter
                 us = $('#info_import').data('rateus'); //getter
@@ -804,7 +804,7 @@ $(function(){
                     $('#descuento_resumen_operadora').val('$ '+descuento_ope);
                 }
             }
-            if (value == 'a_pa' || value == 'a_transfer') {
+            if (value == 'a_airport' || value == 'a_transfer') {
                 $('.content_mprecio').show('slow');
                 $('#_PAYMENT').val('transfer');
                 mx = $('#info_import').data('ratemx'); //getter
@@ -849,6 +849,7 @@ $(function(){
             }
             
             if (value == 'card' || value == "paypal") {
+                $('.content_mprecio').hide('slow');
                 $('#_PAYMENT').val('card');
                 mx = $('#info_import').data('ratemx_c'); //getter
                 us = $('#info_import').data('rateus_c'); //getter
@@ -1251,7 +1252,10 @@ $(function(){
             var code_reser = "";
             var traslado = $('#_TYPE_TRANSFER').val();
             let time_service = "";
-            if (traslado == 'compartido') {
+            if ($('#_TYPE_SERVICE').val()) {
+                type_service = $('#_TYPE_SERVICE').val();
+            }
+            if (traslado == 'compartido' && (type_service == 'RED' || type_service == 'SEN/AH')) {
                 if(!$("#content_check_btns input[name='options']").is(':checked')){
                     $("#alert-msg").show('slow');
                     $("#alert-msg").addClass('alert-danger');
@@ -1265,10 +1269,6 @@ $(function(){
                     time_service = $("#content_check_btns input[name='options']:checked").val();
                     $('#text_time_service').removeClass(' text-danger');
                 }
-            }
-
-            if ($('#_TYPE_SERVICE').val()) {
-                type_service = $('#_TYPE_SERVICE').val();
             }
             if (co_yt == 1) {   
                 //Reservaciones hechas para agencias por parte de Yamevi         

@@ -1,9 +1,25 @@
 
 <?php
-require_once '../../YameviTravel/config/conexion.php';
+require_once '../config/conexion.php';
 session_start();
 if (isset($_SESSION['yt_id_agency'])) {
     $id_agency = $_SESSION['yt_id_agency'];
+    //sino, calculamos el tiempo transcurrido
+    $fechaGuardada = $_SESSION["ultimoAcceso"];
+    $ahora = date("Y-n-j H:i:s");
+    $tiempo_transcurrido = (strtotime($ahora)-strtotime($fechaGuardada));
+
+    //comparamos el tiempo transcurrido
+    if($tiempo_transcurrido >= 600) {
+        ?>
+        <script type="text/javascript">
+        alert('Su sesion a sido cerrada por inactivididad, favor de iniciar sesión nuevamente');
+        window.location.href='../helpers/logout_a.php';
+        </script>
+        <?php
+    }else {
+        $_SESSION["ultimoAcceso"] = $ahora;
+    }
 }else{
  header('location: ../helpers/logout_a.php');
 }
@@ -143,7 +159,6 @@ if (isset($_SESSION['yt_id_agency'])) {
                             </div>
                             <div class="col-xl-12 col-md-12 pt-3">
                                 <div class="form_details">
-
                                     <div class="form-row" id="inps_entrada">
                                         <div class="form-group col-md-4">
                                             <label for="">Aerolina Llegada</label>
@@ -256,6 +271,72 @@ if (isset($_SESSION['yt_id_agency'])) {
                                                     <span>Hrs</span>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>              
+                                    <!-- Horarios  -->
+                                    <div class="form-row pb-3" id="content_time_service">
+                                        <div class="">
+                                            <label for="" id="text_time_service">Hora de Abordaje</label>
+                                        </div>
+                                        <div class="btn-group-toggle" data-toggle="buttons" id="content_check_btns">
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="08:00" active>08:00
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="08:40"> 08:40
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="09:20"> 09:20
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="10:00">10:00
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="10:40"> 10:40
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="11:20"> 11:20
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="12:00">12:00
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options"  autocomplete="off" value="12:40"> 12:40
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="13:20"> 13:20
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:00">14:00
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:40"> 14:40
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:40"> 15:20
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:40"> 16:00
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:40"> 16:40
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="17:20"> 17:20
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="18:00 HRS">18:00
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="18:40 HRS"> 18:40
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="19:20 HRS"> 19:20
+                                            </label>
+                                            <label class="btn btn-outline-secondary btn-sm m-1">
+                                                <input type="radio" name="options" class="options" autocomplete="off" value="20:00 HRS"> 20:00
+                                            </label>
+                                            
                                         </div>
                                     </div>
                                     <div class="form-row" id="inps_salida">
@@ -581,73 +662,7 @@ if (isset($_SESSION['yt_id_agency'])) {
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>                                    
-                                    <!-- Horarios  -->
-                                    <div class="form-row pb-3" id="content_time_service">
-                                        <div class="">
-                                            <label for="" id="text_time_service">Hora de abordaje</label>
-                                        </div>
-                                        <div class="btn-group-toggle" data-toggle="buttons" id="content_check_btns">
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="08:00" active>08:00
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="08:40"> 08:40
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="09:20"> 09:20
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="10:00">10:00
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="10:40"> 10:40
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="11:20"> 11:20
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="12:00">12:00
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options"  autocomplete="off" value="12:40"> 12:40
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="13:20"> 13:20
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:00">14:00
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:40"> 14:40
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:40"> 15:20
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:40"> 16:00
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="14:40"> 16:40
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="17:20"> 17:20
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="18:00 HRS">18:00
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="18:40 HRS"> 18:40
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="19:20 HRS"> 19:20
-                                            </label>
-                                            <label class="btn btn-outline-secondary btn-sm m-1">
-                                                <input type="radio" name="options" class="options" autocomplete="off" value="20:00 HRS"> 20:00
-                                            </label>
-                                            
-                                        </div>
-                                    </div>
+                                    </div>        
                                 </div>
                             </div>
                             <br>
@@ -844,10 +859,10 @@ if (isset($_SESSION['yt_id_agency'])) {
 										<option id="option_card"  value="card">Tarjeta Crédito/Débito</option>
 										<option value="transfer">Transferencia</option>
                                         <option id="option_paypal" value="paypal">Paypal</option>
-                                        <option id="option_a_pa" value="a_pa">Pago al abordar</option>
+                                        <option id="option_cash" value="airport">Pago al abordar</option>
                                         <?php if($_SESSION['yt_internal_yt'] == 1) {?>
-                                        <option id="option_a_transfer" value="a_transfer">Sitio Web - Pago al abordar</option>
-                                        <option id="option_cash" value="airport">Sitio Web - Transferencia</option>
+                                        <option id="option_a_transfer" value="a_transfer">Sitio Web - Transferencia</option>
+                                        <option id="option_cash" value="a_airport">Sitio Web - Pago al abordar</option>
                                         <option id="option_a_paypal" value="a_paypal">Sitio Web - Paypal</option>
                                         <option id="option_a_card" value="a_card">Sitio Web - Tarjeta</option>
                                         <?php } ?>

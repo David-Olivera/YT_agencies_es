@@ -86,6 +86,7 @@
                     echo $key['error'];
                 }
             }
+            mysqli_close($con);
         }
 
         function upload_documents_multi($obj){
@@ -174,6 +175,7 @@
                     echo $key['error'];
                 }
             }
+            mysqli_close($con);
         }
 
         function load_documents($obj){
@@ -194,6 +196,7 @@
                 }
             }
             $jsonString = json_encode($json);
+            mysqli_close($con);
             return $jsonString;
         }
 
@@ -218,6 +221,7 @@
             $message = "<div class='text-center'>
                     <p><small>El archivo $name_doc a sido eliminado correctamente</small> <i class='approved fas fa-check-circle text-success'></i></p>
                 </div>";
+           	mysqli_close($con);
             return $message;
         }
     }

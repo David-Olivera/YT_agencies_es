@@ -30,6 +30,7 @@
                     $message = 0;
                 }
                 $message = 1;
+                mysqli_close($con);
                 return $message;
             }
         }
@@ -52,6 +53,7 @@
                 $status = 0;
             }
             $status = 1;
+            mysqli_close($con);
             return $status;
         }
 
@@ -75,6 +77,7 @@
                 $status = 0;
             }
             $status = 1;
+            mysqli_close($con);
             return $status;
         }
 

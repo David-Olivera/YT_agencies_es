@@ -262,5 +262,5 @@
         </div>";
 		echo $output;
 	}
-
+	$con = null;
 ?>

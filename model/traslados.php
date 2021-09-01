@@ -216,6 +216,7 @@
             //Diseño de carta de confirmacion
             if ($result_reserv && $result_detalles && $result_concilia && $result_client) {
                 $letter = $this->createLetterConfirm($id_reserva,$letter_lang,$con, $ticket =0, $total);
+                $con = null;
                 return $letter;
             }else{
                 $error = '0';
@@ -708,6 +709,7 @@
 
            $lists_services = "";
            $lists_services = $rate_service_private.$rate_service_luxury.$rate_service_shared;
+           $con = null;
            echo $lists_services;
 
 
@@ -1340,6 +1342,7 @@
                 ';
 
             }
+            $con = null;
             echo $rate_service_private.$rate_service_luxury;
         }
         function verifyDestionation($hotel, $con){
@@ -1352,6 +1355,7 @@
                     $res = true;
                 }
             }
+            $con = null;
             return $res;
         }
 
@@ -1365,6 +1369,7 @@
                     }
                 }
             }
+            $con = null;
             return $divisa;
         }
         function getAreaDestination($hotel, $con){
@@ -2595,6 +2600,7 @@
                     </html>
                 ';
                 if ($newticket == 1) {
+                    $con = null;
                     return $template.$newticket;
                     exit;
                 }
@@ -2638,6 +2644,7 @@
                     
                     //mail('reservaciones@yamevitravel.com', $subjectClient, $template,$headerSales);
 
+                    mysqli_close($con);
                     return json_encode(array('invoice' => $obj->code_invoice, 'status' => 1,'status_r' => $obj->status_reservation, 'method_payment' => $obj->method_payment));
                 }
             }
@@ -2654,6 +2661,7 @@
                     $footer = $row->footer;
                 }
             }
+            $con = null;
             return $footer;
         }
 
@@ -2667,6 +2675,7 @@
                         $icon = $row->icon_agency;
                     }
                 }
+                $con = null;
                 return $icon;
             }
         }
@@ -2680,12 +2689,14 @@
             if ($result) {
                 $response = true;
             }
+            mysqli_close($con);
             return $response;
         }
         function callToLetter($code_invoice, $letter_lang, $viewCeros){
             include('../config/conexion.php');
             $id_reservation = $this->getIdReservation($code_invoice);
             $reservation = $this->createLetterConfirm($id_reservation,$letter_lang,$con,$ticket =0, $viewCeros);
+            $con = null;
             return $reservation;
         }
         private function getIdReservation($invoice){
@@ -2697,6 +2708,7 @@
                 $obj = mysqli_fetch_object($result);
                 $id_reservation = $obj->id_reservation;
             }
+            $con = null;
             return $id_reservation;
         }
         public function getLetterHtml($id_reservation, $total){
@@ -2705,14 +2717,16 @@
                 $newtotal = $total;
             }
             include('../config/conexion.php');
-            $new_id_res = MD5($id_reservation);
+            $new_id_res = $id_reservation;
             $query = "SELECT id_reservation, type_language FROM reservations WHERE MD5(id_reservation) like '$new_id_res';";
             $result = mysqli_query($con, $query);
             if ($result) {
                 $obj = mysqli_fetch_object($result);
                 $id_reservation = $obj->id_reservation;
                 $ticket = 1;
-                return $this->createLetterConfirm($obj->id_reservation, $obj->type_language, $con, $ticket,$newtotal);
+                $lett = $this->createLetterConfirm($obj->id_reservation, $obj->type_language, $con, $ticket,$newtotal);
+                $con = null;
+                return $lett;
                 exit;
             }
             return null;

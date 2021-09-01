@@ -20,7 +20,8 @@
             $query_noconci = "SELECT COUNT(*) as total FROM conciliation WHERE id_agency =  $id_agency AND `status` = 0;";
             $rs_nocon = mysqli_query($con,$query_noconci);
             $row_nc = mysqli_fetch_assoc($rs_nocon);
-
+            
+            mysqli_close($con);
             return json_encode(array('users' => $row_u['total'], 'reservations' => $row_r['total'], 'conciliations' => $row_c['total'], 'no_conciliations' => $row_nc['total']));
         }
 
@@ -93,6 +94,7 @@
                 $jsonStrig = json_encode($json[0]);
                 echo $jsonStrig; 
             }
+            mysqli_close($con);
         }
         public function updateReservationState($obj){
             $ins = json_decode($obj);
@@ -105,6 +107,7 @@
             if ($result) {
                 $status = 1;
             }
+            mysqli_close($con);
             return $status;
         }
 
@@ -435,6 +438,7 @@
                     'sql' => $query_reserva
                 );
                 $jsonString = json_encode($json);
+                $con = null;
                 echo $jsonString;
             }
             /* Cierra la conexión */
@@ -834,6 +838,8 @@
                     'sql' => $query_detalles
                 );
                 $jsonString = json_encode($json);
+                
+                $con = null;
                 echo $jsonString;
             }else{               
                 $json = array(
@@ -843,6 +849,7 @@
                     'sql' => $query_detalles
                 );
                 $jsonString = json_encode($json);
+                $con = null;
                 echo $jsonString;
             }
             /* Cierra la conexión */
@@ -858,6 +865,7 @@
                     $res = true;
                 }
             }
+            $con = null;
             return $res;
         }
 
@@ -871,6 +879,7 @@
                     }
                 }
             }
+            $con = null;
             return $divisa;
         }
         function getAreaDestination($hotel, $con){
@@ -888,6 +897,7 @@
                 }
             }
             $jsonString = json_encode($json);
+            $con = null;
             return $jsonString;
         }
         function getRateArea($id_zone,$con){
@@ -928,6 +938,8 @@
                 }
             }
             $jsonString = json_encode($json);
+            
+            $con = null;
             return $jsonString;
         }
     }

@@ -1,15 +1,17 @@
 <?php 
     class Login{
-        private $fileConn = '../../YameviTravel/config/conexion.php';
+        private $fileConn = '../config/conexion.php';
 
         public function login_access($obj){
             session_start();
+            session_regenerate_id(true);
+
             include(''.$this->fileConn.'');
             $req =json_decode($obj);
             $newemail =$req->{'username'};
             $newpassword = $req->{'password'};
-            $myemail = mysqli_real_escape_string($con,$newemail);
-            $mypassword = mysqli_real_escape_string($con,$newpassword); 
+            $myemail = strip_tags(mysqli_real_escape_string($con,$newemail));
+            $mypassword = strip_tags(mysqli_real_escape_string($con,$newpassword)); 
             $passmd5 = MD5($mypassword);
             $sql = "SELECT * FROM agencies  WHERE (email_agency = '$myemail' or username = '$myemail') and password = '$passmd5';";
             $result = mysqli_query($con,$sql);
@@ -35,14 +37,14 @@
 
                             
                            //CONFIG GLOBALS
-                           $conf = json_decode($this->getConfigAgency($row['id_agency'], $con));
+                              $conf = json_decode($this->getConfigAgency($row['id_agency'], $con));
                             $_SESSION['yt_todaysale'] = $conf->{'todaysale'};
                             $_SESSION['yt_paypal'] = $conf->{'paypal'};
                             $_SESSION['yt_cash'] = $conf->{'cash'};
                             $_SESSION['yt_card'] = $conf->{'card'};
                             $_SESSION['yt_operadora'] = $conf->{'operadora'};
                             $_SESSION['yt_internal_yt'] = $conf->{'internal_yt'};
-                            $_SESSION['tiempo'] = time();
+                            $_SESSION["ultimoAcceso"]= date("Y-n-j H:i:s");
                            if($_SESSION){
                               $status = 1 ;
                            }else{
@@ -88,6 +90,7 @@
                                     $_SESSION['yt_card'] = $conf->{'card'};
                                     $_SESSION['yt_operadora'] = $conf->{'operadora'};
                                     $_SESSION['yt_internal_yt'] = $conf->{'internal_yt'};
+                                    $_SESSION["ultimoAcceso"]= date("Y-n-j H:i:s");
                                    if($_SESSION){
                                       $status = 1 ;
                                    }else{
@@ -141,8 +144,9 @@
                 'msg' =>$message, 
                 'status' => $status
              );
-            mysqli_close($con);
+            
             $jsonStrig = json_encode($json[0]);
+            $con = null;
             echo $jsonStrig; 
         }
         

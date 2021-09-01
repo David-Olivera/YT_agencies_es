@@ -108,8 +108,8 @@
 					<a href="#" id="view_reservation" data-edit="0" data-id="'.$row['id_reservation'].'" data-code="'.$row['code_invoice'].'" title="Editar Reservación" class="reservation-action btn btn-secondary btn-sm" ><i class="fas fa-eye" ></i></a>
 					';
 					$seccion_edit ='
-					<button id="edit_reservation"  title="Editar Reservación" class="reservation-action btn btn-yamevi_2 btn-sm" disabled><i class="fas fa-edit" ></i></button>
-					';
+								<a href="#" id="edit_reservation" data-edit="1" data-id="'.$row['id_reservation'].'" data-code="'.$row['code_invoice'].'" title="Editar Reservación" class="reservation-action btn btn-yamevi_2 btn-sm" ><i class="fas fa-edit" ></i></a>
+								';
 					$seccion_status = "";
 					if ($row['status_reservation'] != 'CANCELLED') {
 						$seccion_status = '<select class="agencyCancelSale"  data-sale="'.MD5($row['id_reservation']).'">
@@ -132,7 +132,7 @@
 						$date_differences = date_diff($date_today, $date_exit);
 						if ($date_differences->days >= 2) {
 							$seccion_edit ='
-							<a href="#" id="edit_reservation" data-edit="1" data-id="'.$row['id_reservation'].'" data-code="'.$row['code_invoice'].'" title="Editar Reservación" class="reservation-action btn btn-yamevi_2 btn-sm" ><i class="fas fa-eye" ></i></a>
+							<a href="#" id="edit_reservation" data-edit="1" data-id="'.$row['id_reservation'].'" data-code="'.$row['code_invoice'].'" title="Editar Reservación" class="reservation-action btn btn-yamevi_2 btn-sm" ><i class="fas fa-edit" ></i></a>
 							';	
 						}
 					}
@@ -221,7 +221,8 @@
 					if ($row['date_exit'] == '' || $row['date_exit'] == '0000-00-00') {
 						$date_exit = "";
 					}
-					$output.="<tr res-id='{$row['id_reservation']}'>	
+					$id = md5($row['id_reservation']);
+					$output.="<tr res-id='{$id}'>	
 							<td class='hidden-sm'>{$row['code_invoice']}</td>
 							<td>{$row['name_client']} {$row['last_name']} {$row['mother_lastname']}</td>
 							<td>{$transfer}</td>
@@ -269,6 +270,7 @@
 			}
 			$output .= "</ul>";
 
+            mysqli_close($con);
 			echo $output;
 
 		}else{
@@ -286,6 +288,7 @@
 				<a href='transfers.php' class='btn btn-yamevi' data-animation='fadeInLeft' data-delay='.8s'>Reservar Ahora</a><br>
             </div>";
 			}
+			$con = null;
 			echo $output;
 		}
 	}else{
